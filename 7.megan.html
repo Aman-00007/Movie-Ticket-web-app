@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Book Tickets - Megan</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f7f7f7;
+      margin: 0;
+      padding: 20px;
+    }
+
+       .main {
+  padding: 10px 40px;
+  margin: 0px 0px 30px 0px;
+  font-family: "Bitcount Grid Double", system-ui;
+  font-size: 25px;
+  font-optical-sizing: auto;
+  background-color: #ababab;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px; 
+}
+
+    .main2{
+        color:#d5336b;
+    }
+    .head{
+        font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    }
+
+   .bms-search {
+      position: relative;
+      width: 320px;
+      align-items: center;
+    
+      
+    }
+
+   .search-input {
+      width: 100%;
+      padding: 10px 12px 10px 40px;
+      font-size: 15px;
+      border: 1px solid #ccc;
+      border-radius: 20px;
+      outline: none;
+      transition: 0.5s ease;
+    }    
+    
+
+   .search-input:focus {
+      border-color: #ed4c61; 
+      box-shadow: 0 0 15px rgba(236, 94, 113, 0.4);
+    }
+
+   .search-icon {
+      position: absolute;
+      top: 50%;
+      left: 12px;
+      transform: translateY(-50%);
+      color: #aaa;
+      font-size: 16px;
+    }
+
+    .movie-header {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 10px;
+      height: 480px;
+      background-color:#f1f1f1;
+      margin: -1%;
+      background-image: linear-gradient(90deg, rgb(26, 26, 26) 24.97%, rgb(26, 26, 26) 38.3%, rgba(26, 26, 26, 0.04) 97.47%, rgb(26, 26, 26) 100%), url(https://assets-in.bmscdn.com/iedb/movies/images/mobile/listing/xxlarge/m3gan-20-et00432076-1752815713.jpg);
+      background-position: center;  
+      display: flex;
+      justify-content: left;
+      align-items: center;
+    }
+
+
+    .poster{
+      display: flex;
+      justify-content: center;
+      align-content: center;
+      margin-left: 150px;
+      margin-right: 50px;
+    }
+     .head2{
+      color: white;
+      padding-left: 32px ;
+     }
+
+     .head2 h2{
+      margin-bottom: 20px;
+     }
+
+     .rating{
+      height: 34 px;
+      width: 320px;
+      padding: 14px ;
+      background-color: rgb(51, 51, 51);
+      border-radius: 8px;
+      font-size: 20px;
+      display: flex;
+      
+     } 
+
+     .rating img{
+      height: 24px;
+      margin-right: 15px;
+     }
+     .time{
+      font-size: 15px;
+      margin: 15px 0px;
+      font-weight:lighter;
+      
+     }
+    .poster img{
+      height: 416px;
+      width: 261px;
+      border-radius: 5px;
+     
+    }
+
+    .location {
+      color: gray;
+      margin-bottom: 20px;
+      margin-top: 20px;
+    }
+
+    .dates {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .date-button {
+      padding: 8px 16px;
+
+      background-color: #e9e9e9;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .date-button:focus {
+      background-color: #ff4d4d;
+      color: white;
+      transition-property: transform;
+      transition-duration: 0.5s;
+      transform: scale(1.1);
+    }
+
+    .theatre {
+      background: white;
+      margin-bottom: 20px;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .theatre-name {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .showtimes {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .showtime {
+      padding: 8px 12px;
+      background-color: #f0f0f0;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+     a{
+      text-decoration: none;
+      color: rgb(7, 7, 7);
+    }
+
+    .showtime:hover {
+      background-color: #ff7373;
+      color: white;
+      transition-property: transform;
+      transition-duration: 0.3s;
+      transform: scale(1.05);
+    }
+  </style>
+</head>
+<body>
+
+     <div class="main">
+
+        <div class="head" >
+        <b>
+            Book<span class="main2">Your</span>Show
+        </b>
+        </div>
+
+
+         <div class="bms-search">
+            <i class="fas fa-search search-icon">
+            </i>
+            </i>
+            </i>
+            <input type="text" placeholder="Search for Movies" class="search-input">
+         </div>
+    </div>
+
+  <div class="movie-header">
+    <div class="poster">
+      <img src="https://assets-in.bmscdn.com/iedb/movies/images/mobile/thumbnail/xlarge/m3gan-20-et00432076-1752815713.jpg" alt="">
+       
+    </div>
+    <div class="head2">
+      <h2>
+        M3GAN 2.0
+      </h2>
+      <div class="rating">
+       <img src="https://cdn-icons-png.freepik.com/512/10263/10263059.png?ga=GA1.1.1523212983.1734116727" alt="">
+          8.2/10  (738k votes) >
+      </div>
+
+      <div class="time">
+        2h  • Sci-Fi , Horror , Thriller  • UA16+  • 27 Jun, 2025
+      </div>
+    </div>
+  </div>
+  
+ 
+  <div class="location">Mumbai</div>
+
+  <div class="dates">
+    <button class="date-button" >Jul 18</button>
+    <button class="date-button">Jul 19</button>
+    <button class="date-button">Jul 20</button>
+</div>
+
+  <div class="theatre">
+    <div class="theatre-name">PVR ICON Infiniti Mall, Andheri</div>
+    <div class="showtimes">
+      <div class="showtime">10:00 AM</div>
+      <div class="showtime">01:30 PM</div>
+      <div class="showtime">04:45 PM</div>
+      <div class="showtime">08:00 PM</div>
+    </div>
+  </div>
+
+  <div class="theatre">
+    <div class="theatre-name">INOX R-City, Ghatkopar</div>
+    <div class="showtimes">
+      <div class="showtime">11:15 AM</div>
+      <div class="showtime">02:45 PM</div>
+      <div class="showtime">06:00 PM</div>
+    </div>
+  </div>
+
+</body>
+</html>

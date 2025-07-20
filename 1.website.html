@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>BookYourShow</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Bitcount+Grid+Double:wght@100..900&display=swap');
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+
+    body {
+      background-color: rgb(247, 247, 247);
+      font-family: system-ui, sans-serif;
+    }
+
+    .main {
+      padding: 20px 40px;
+      font-family: "Bitcount Grid Double", system-ui;
+      font-size: 25px;
+      background-color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .main2 {
+      color: #d5336b;
+    }
+
+    .head {
+      font-family: 'Lucida Sans', sans-serif;
+    }
+
+    .bms-search {
+      position: relative;
+      width: 320px;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 10px 12px 10px 40px;
+      font-size: 15px;
+      border: 1px solid #ccc;
+      border-radius: 20px;
+      outline: none;
+      transition: 0.5s ease;
+    }
+
+    .search-input:focus {
+      border-color: #ed4c61;
+      box-shadow: 0 0 15px rgba(236, 94, 113, 0.4);
+    }
+
+    .search-icon {
+      position: absolute;
+      top: 50%;
+      left: 12px;
+      transform: translateY(-50%);
+      color: #c8c8c8;
+      font-size: 16px;
+    }
+
+    .low {
+      background-color: #afafaf;
+      padding: 40px 0;
+    }
+
+    .banner-container-3d {
+      display: flex;
+      gap: 40px;
+      padding: 0 10%;
+      overflow-x: hidden;
+      overflow: hidden;
+      scroll-snap-type: x mandatory;
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    
+    .banner-3d {
+      position: relative;
+      flex: 0 0 auto;
+      width: 1000px;
+      height: 300px;
+      perspective: 1000px;
+      scroll-snap-align: center;
+      transition: transform 0.5s ease;
+    
+      
+  
+    }
+
+    .banner-3d img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 25px;
+      transform-style: preserve-3d;
+      transition: transform 0.5s ease, box-shadow 0.3s ease;
+    }
+
+    .banner-3d:hover img {
+      transform: rotateY(8deg) scale(1.03);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    }
+
+    .banner-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: white;
+      text-align: center;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
+    }
+
+    .banner-text h1 {
+      font-size: 2.5rem;
+    }
+
+    .movies {
+      padding: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+    }
+
+    .movie {
+      width: 201px;
+    }
+
+
+    .movie img {
+      width: 201px;
+      height: 251px;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .movie img:hover {
+      transform: scale(1.08);
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+      cursor: pointer;
+    }
+
+    .movie h3 {
+      color: black;
+      text-align: center;
+      font-family: system-ui, sans-serif;
+    }
+
+    .movie a {
+      text-decoration: none;
+    }
+
+    .poster {
+      display: flex;
+      justify-content: center;
+      padding: 50px 0;
+    }
+
+    .poster img {
+      width: 976px;
+      height: 95px;
+      border-radius: 30px;
+      object-fit: cover;
+    }
+
+
+    .foot{
+      height: 50px;
+      background-color: #c8c8c8;
+    }
+
+    @media (max-width: 1024px) {
+      .banner-3d {
+        width: 90vw;
+      }
+
+      .poster img {
+        width: 90%;
+        height: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="main">
+    <div class="head">
+      <b>Book<span class="main2">Your</span>Show</b>
+    </div>
+    <div class="bms-search">
+      <i class="fas fa-search search-icon"></i>
+      <input type="text" placeholder="Search for Movies" class="search-input">
+    </div>
+  </div>
+
+  <div class="low">
+    <div class="banner-container-3d">
+      <div class="banner-3d">
+        <img src="https://upload.wikimedia.org/wikipedia/en/a/a4/Avatar_Fire_and_Ash_logo.jpg" alt="Avatar">
+        <div class="banner-text">
+          <h2>Coming Soon</h2>
+          <h1>Avatar: Fire and Ash</h1>
+          <p>December 2025</p>
+        </div>
+      </div>
+
+      <div class="banner-3d">
+        <img src="https://upload.wikimedia.org/wikipedia/en/f/f5/War_2_official_poster.jpg" alt="War 2">
+        <div class="banner-text">
+          <h2>Coming Soon</h2>
+          <h1>WAR 2</h1>
+          <p>14 August 2025</p>
+        </div>
+      </div>
+
+      <div class="banner-3d">
+        <img src="https://upload.wikimedia.org/wikipedia/hi/thumb/8/80/Ramayana_%282026_film%29.jpeg/375px-Ramayana_%282026_film%29.jpeg" alt="Ramayan">
+        <div class="banner-text">
+          <h2>Coming Soon</h2>
+          <h1>RAMANYAN</h1>
+          <p>Diwali 2026</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="movies">
+    <div class="movie">
+      <a href="3.maa.html">
+        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTDr8JVAep40qgx8oXB97kNPhX_lo_RmcHPjVP8zIk4jzaFt-cbC0NGbpYg7tXLlcIhpTc&usqp=CAU" alt="Maa">
+        <h3>Maa</h3>
+      </a>
+    </div>
+
+    <div class="movie">
+      <a href="2. sitaare.html">
+        <img src="https://assets-in.bmscdn.com/iedb/movies/images/mobile/thumbnail/xlarge/sitaare-zameen-par-et00444869-1748240580.jpg" alt="Sitaare Zameen Par">
+        <h3>Sitaare Zameen Par</h3>
+      </a>
+    </div>
+
+    <div class="movie">
+      <a href="4.kannappa.html">
+        <img src="https://m.media-amazon.com/images/M/MV5BNTdhMjA2NWMtNmVkOC00ODdiLTgwNjItNWQ5ZGI1ZTEzODI1XkEyXkFqcGc@.V1_FMjpg_UY4961.jpg" alt="Kannappa">
+        <h3>Kannappa</h3>
+      </a>
+    </div>
+
+    <div class="movie">
+      <a href="5. f1.html">
+        <img src="https://upload.wikimedia.org/wikipedia/en/4/44/F1_The_Movie_Theatrical_Poster.jpg" alt="F1: The Movie">
+        <h3>F1: The Movie</h3>
+      </a>
+    </div>
+
+    <div class="movie">
+      <a href="6.housef.html">
+        <img src="https://upload.wikimedia.org/wikipedia/en/e/ec/Housefull_5.jpg" alt="Housefull 5">
+        <h3>Housefull 5</h3>
+      </a>
+    </div>
+
+    <div class="movie">
+      <a href="7.megan.html">
+        <img src="https://upload.wikimedia.org/wikipedia/en/9/94/M3GAN_2.0_Official_Poster.jpg" alt="M3GAN 2.0">
+        <h3>M3GAN 2.0</h3>
+      </a>
+    </div>
+
+    <div class="movie">
+      <a href="8.how to .html">
+        <img src="https://upload.wikimedia.org/wikipedia/en/8/80/How_To_Train_Your_Dragon_2025_Poster.jpg" alt="HTTYD 2025">
+        <h3>How To Train Your Dragon 2025</h3>
+      </a>
+    </div>
+
+    <div class="movie">
+      <a href="9.a nafratein.html">
+        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQG02Hiz4H5J9g8CaRbAWJlOIme5PC1P14mVQ&s" alt="Nafratein">
+        <h3>Nafratein</h3>
+      </a>
+    </div>
+  </div>
+
+  <div class="poster">
+    <img src="poster.jpg" alt="poster">
+  </div>
+
+
+  <footer class="foot">
+
+  </footer>
+
+</body>
+</html>
+
+
+
+
+<script>
+  const container = document.querySelector('.banner-container-3d');
+  const banners = document.querySelectorAll('.banner-3d');
+  const bannerWidth = banners[0].offsetWidth + 40; // width + gap
+  let currentIndex = 0;
+  let interval;
+
+  function scrollToBanner(index) {
+    container.scrollTo({
+      left: index * bannerWidth,
+      behavior: 'smooth'
+    });
+  }
+
+  function rotateBanner() {
+    currentIndex = (currentIndex + 1) % banners.length;
+    scrollToBanner(currentIndex);
+  }
+
+  function startAutoRotate() {
+    interval = setInterval(rotateBanner, 4000);
+  }
+
+  function stopAutoRotate() {
+    clearInterval(interval);
+  }
+
+  startAutoRotate();
+
+  container.addEventListener('mouseenter', stopAutoRotate);
+  container.addEventListener('mouseleave', startAutoRotate);
+</script>
