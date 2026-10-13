@@ -9,8 +9,11 @@ export function useBookingController(selectedCity = 'Mumbai') {
   const [theatres, setTheatres] = useState(() => TheatreModel.fromArray(fallbackTheatres));
   const [beverages, setBeverages] = useState(() => BeverageModel.fromArray(fallbackBeverages));
   const [bookingMovie, setBookingMovie] = useState(null);
+  const [initialBookingOptions, setInitialBookingOptions] = useState(null);
   const [ticketsModalOpen, setTicketsModalOpen] = useState(false);
   const [snacksModalOpen, setSnacksModalOpen] = useState(false);
+  const [userLocation, setUserLocation] = useState(null);
+  const [locating, setLocating] = useState(false);
 
   // User's booked passes
   const [bookings, setBookings] = useState(() => {
@@ -45,12 +48,66 @@ export function useBookingController(selectedCity = 'Mumbai') {
     };
   }, [selectedCity]);
 
-  const openBooking = useCallback((movie) => {
+  // GPS Location detector
+  const detectLocation = useCallback(() => {
+    return new Promise((resolve) => {
+      if (!('geolocation' in navigator)) {
+        resolve(null);
+        return;
+      }
+      setLocating(true);
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const loc = {
+            latitude: pos.coords.latitude,
+            longitude: pos.coords.longitude,
+            detected: true,
+          };
+          setUserLocation(loc);
+          setLocating(false);
+          resolve(loc);
+        },
+        (err) => {
+          console.warn('Geolocation denied or timed out:', err);
+          // Default coordinates for active city
+          const cityCoords = {
+            'Mumbai': { latitude: 19.0760, longitude: 72.8777 },
+            'Delhi NCR': { latitude: 28.6139, longitude: 77.2090 },
+            'Bengaluru': { latitude: 12.9716, longitude: 77.5946 },
+            'Hyderabad': { latitude: 17.3850, longitude: 78.4867 },
+            'Pune': { latitude: 18.5204, longitude: 73.8567 },
+          };
+          const fallback = cityCoords[selectedCity] || cityCoords['Mumbai'];
+          const loc = { ...fallback, detected: false };
+          setUserLocation(loc);
+          setLocating(false);
+          resolve(loc);
+        },
+        { enableHighAccuracy: true, timeout: 8000 }
+      );
+    });
+  }, [selectedCity]);
+
+  // Sort theatres by distance if user location is detected
+  const proximityTheatres = theatres.map((t) => {
+    if (userLocation?.latitude && userLocation?.longitude) {
+      const dist = t.calculateDistanceTo(userLocation.latitude, userLocation.longitude);
+      return {
+        ...t,
+        distance_km: dist,
+      };
+    }
+    return t;
+  }).sort((a, b) => a.distance_km - b.distance_km);
+
+  const openBooking = useCallback((movie, options = null) => {
     setBookingMovie(movie);
+    setInitialBookingOptions(options);
   }, []);
 
   const closeBooking = useCallback(() => {
     setBookingMovie(null);
+    setInitialBookingOptions(null);
   }, []);
 
   const openTicketsModal = useCallback(() => {
@@ -80,9 +137,10 @@ export function useBookingController(selectedCity = 'Mumbai') {
   }, []);
 
   return {
-    theatres,
+    theatres: proximityTheatres,
     beverages,
     bookingMovie,
+    initialBookingOptions,
     openBooking,
     closeBooking,
     bookings,
@@ -93,5 +151,8 @@ export function useBookingController(selectedCity = 'Mumbai') {
     snacksModalOpen,
     openSnacksModal,
     closeSnacksModal,
+    userLocation,
+    locating,
+    detectLocation,
   };
 }

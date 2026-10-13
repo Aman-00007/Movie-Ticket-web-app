@@ -14,30 +14,29 @@ export const Navbar = ({
   onOpenTickets,
   user,
   onOpenAuth,
-  onLogout
+  onLogout,
+  onGoHome,
+  userLocation,
+  locating,
+  onDetectLocation,
 }) => {
   const [cityDropdownOpen, setCityDropdownOpen] = useState(false);
-  const [locating, setLocating] = useState(false);
 
-  const handleDetectLocation = () => {
-    setLocating(true);
-    if ('geolocation' in navigator) {
+  const handleDetectLocation = async () => {
+    if (onDetectLocation) {
+      await onDetectLocation();
+      setCityDropdownOpen(false);
+    } else if ('geolocation' in navigator) {
       navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          // Detect nearest city based on coords or fallback to Mumbai
-          setLocating(false);
+        () => {
           setCityDropdownOpen(false);
           onSelectCity('Mumbai');
         },
         () => {
-          setLocating(false);
           setCityDropdownOpen(false);
           onSelectCity('Mumbai');
         }
       );
-    } else {
-      setLocating(false);
-      setCityDropdownOpen(false);
     }
   };
 
@@ -62,7 +61,10 @@ export const Navbar = ({
         {/* Brand Logo */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
           <div
-            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            onClick={() => {
+              if (onGoHome) onGoHome();
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
             style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}
           >
             <div style={{
