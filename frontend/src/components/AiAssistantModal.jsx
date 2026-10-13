@@ -4,7 +4,7 @@ import { api } from '../services/api';
 
 export const AiAssistantModal = ({ onClose, onBookMovie, movies }) => {
   const [tab, setTab] = useState('recommend'); // 'recommend' | 'chat'
-  
+
   // Recommender state
   const [mood, setMood] = useState('Excited & Thrilled');
   const [genre, setGenre] = useState('');
