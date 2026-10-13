@@ -6,6 +6,7 @@ import { MovieCard } from '../components/MovieCard';
 import { SparklesIcon, GamepadIcon, PopcornIcon, StarIcon } from '../components/Icons';
 
 export const HomeView = ({
+  user,
   movies,
   filteredMovies,
   loading,
@@ -24,6 +25,8 @@ export const HomeView = ({
   onOpenSnacks,
   onOpenMovieManager,
 }) => {
+  const isAdmin = Boolean(user && (user.role === 'admin' || user.role === 'ADMIN'));
+
   // Sort or pick recommended movies (now showing top rated 2026 movies)
   const recommendedMovies = movies.filter(
     (m) =>
@@ -46,10 +49,11 @@ export const HomeView = ({
       {/* ─── 1. Top Hero Carousel Banner with Fitted Poster in Layout ─── */}
       <HeroBanner
         movies={movies}
+        user={user}
         onBookMovie={onBookMovie}
         onWatchTrailer={onWatchTrailer}
         onSelectMovie={onSelectMovie}
-        onDeleteMovie={onDeleteMovie}
+        onDeleteMovie={isAdmin ? onDeleteMovie : null}
       />
 
       {/* ─── 2. Top "Recommended Movies" Side-Scrolling Carousel (Screenshots 1 & 3) ─── */}
@@ -60,7 +64,7 @@ export const HomeView = ({
         onBookMovie={onBookMovie}
         onWatchTrailer={onWatchTrailer}
         onSelectMovie={onSelectMovie}
-        onDeleteMovie={onDeleteMovie}
+        onDeleteMovie={isAdmin ? onDeleteMovie : null}
       />
 
       {/* ─── 3. Premieres Section (Screenshot 2 Match) ─── */}
@@ -69,7 +73,7 @@ export const HomeView = ({
         onBookMovie={onBookMovie}
         onWatchTrailer={onWatchTrailer}
         onSelectMovie={onSelectMovie}
-        onDeleteMovie={onDeleteMovie}
+        onDeleteMovie={isAdmin ? onDeleteMovie : null}
       />
 
       {/* ─── 4. Quick Features Banner: AI Cinema Bot, Movie Manager with Gemini Flash, Arcade, Snacks ─── */}
@@ -82,58 +86,60 @@ export const HomeView = ({
           marginBottom: 44,
         }}
       >
-        {/* Gemini Flash 2026 Movie Finder / Manager */}
-        <div
-          onClick={onOpenMovieManager}
-          style={{
-            backgroundColor: 'var(--bg-card)',
-            border: '1px solid rgba(139, 92, 246, 0.35)',
-            borderRadius: 'var(--radius-md)',
-            padding: '18px 20px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 16,
-            cursor: 'pointer',
-            background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.12) 0%, rgba(17, 22, 34, 0.95) 100%)',
-            transition: 'all 0.3s ease',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.transform = 'translateY(-3px)';
-            e.currentTarget.style.borderColor = '#a78bfa';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = 'translateY(0)';
-            e.currentTarget.style.borderColor = 'rgba(139, 92, 246, 0.35)';
-          }}
-        >
+        {/* Gemini Flash 2026 Movie Finder / Manager (Admin Only) */}
+        {isAdmin && (
           <div
+            onClick={onOpenMovieManager}
             style={{
-              width: 44,
-              height: 44,
-              borderRadius: 12,
-              backgroundColor: 'rgba(139, 92, 246, 0.25)',
-              color: '#c4b5fd',
+              backgroundColor: 'var(--bg-card)',
+              border: '1px solid rgba(239, 68, 68, 0.4)',
+              borderRadius: 'var(--radius-md)',
+              padding: '18px 20px',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0,
-              fontSize: '1.3rem',
+              gap: 16,
+              cursor: 'pointer',
+              background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(17, 22, 34, 0.95) 100%)',
+              transition: 'all 0.3s ease',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-3px)';
+              e.currentTarget.style.borderColor = '#ef4444';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.4)';
             }}
           >
-            ⚡
-          </div>
-          <div>
-            <div style={{ fontWeight: 800, fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: 6 }}>
-              Movie Manager
-              <span className="badge" style={{ backgroundColor: '#8b5cf6', color: 'white', fontSize: '0.65rem', padding: '2px 6px' }}>
-                GEMINI FLASH
-              </span>
+            <div
+              style={{
+                width: 44,
+                height: 44,
+                borderRadius: 12,
+                backgroundColor: 'rgba(239, 68, 68, 0.25)',
+                color: '#fca5a5',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
+                fontSize: '1.3rem',
+              }}
+            >
+              🛡️
             </div>
-            <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: 2 }}>
-              Web-search & add 2026 movies or delete old titles
+            <div>
+              <div style={{ fontWeight: 800, fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: 6 }}>
+                Movie Admin Panel
+                <span className="badge" style={{ backgroundColor: '#ef4444', color: 'white', fontSize: '0.65rem', padding: '2px 6px' }}>
+                  ADMIN ONLY
+                </span>
+              </div>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: 2 }}>
+                Web-search & add 2026 movies or delete old titles with Gemini Flash
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* AI Movie Advisor */}
         <div
@@ -323,23 +329,25 @@ export const HomeView = ({
             </button>
           </div>
 
-          {/* Quick Action Button to Open Movie Manager */}
-          <button
-            onClick={onOpenMovieManager}
-            className="btn btn-secondary"
-            style={{
-              padding: '8px 18px',
-              fontSize: '0.85rem',
-              fontWeight: 700,
-              display: 'flex',
-              alignItems: 'center',
-              gap: 6,
-              borderColor: 'rgba(139, 92, 246, 0.4)',
-              color: '#c4b5fd',
-            }}
-          >
-            ⚡ Manage / Add 2026 Movies
-          </button>
+          {/* Quick Action Button to Open Movie Manager (Admin Only) */}
+          {isAdmin && (
+            <button
+              onClick={onOpenMovieManager}
+              className="btn btn-secondary"
+              style={{
+                padding: '8px 18px',
+                fontSize: '0.85rem',
+                fontWeight: 700,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+                borderColor: 'rgba(239, 68, 68, 0.4)',
+                color: '#fca5a5',
+              }}
+            >
+              🛡️ Movie Admin (Add/Delete)
+            </button>
+          )}
 
           {/* Result Count */}
           <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
@@ -401,7 +409,7 @@ export const HomeView = ({
           <div style={{ fontSize: '3rem', marginBottom: 12 }}>🔍</div>
           <h3 style={{ fontSize: '1.2rem', marginBottom: 6 }}>No Movies Found</h3>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', maxWidth: 400, margin: '0 auto 16px' }}>
-            We could not find any titles matching your filter criteria. Try resetting genre or search term, or search web using Gemini Flash!
+            We could not find any titles matching your filter criteria. Try resetting genre or search term!
           </p>
           <button
             onClick={() => {
@@ -412,9 +420,15 @@ export const HomeView = ({
           >
             Clear Filters
           </button>
-          <button onClick={onOpenMovieManager} className="btn btn-primary">
-            ⚡ Search Web with Gemini Flash
-          </button>
+          {isAdmin ? (
+            <button onClick={onOpenMovieManager} className="btn btn-primary">
+              ⚡ Search Web with Gemini Flash
+            </button>
+          ) : (
+            <button onClick={onOpenAi} className="btn btn-primary">
+              ✨ Ask CineBot AI for Recommendations
+            </button>
+          )}
         </div>
       ) : (
         <div
@@ -430,8 +444,8 @@ export const HomeView = ({
               movie={movie}
               onBook={onBookMovie}
               onWatchTrailer={onWatchTrailer}
-              onSelectMovie={onSelectMovie}
-              onDelete={onDeleteMovie}
+              onSelect={onSelectMovie}
+              onDelete={isAdmin ? onDeleteMovie : null}
             />
           ))}
         </div>

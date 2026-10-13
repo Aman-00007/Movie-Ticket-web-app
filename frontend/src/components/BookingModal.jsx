@@ -138,6 +138,12 @@ export const BookingModal = ({
 
   // Final Stripe & Gateway Payment Execution
   const handleFinalPayment = async () => {
+    if (!user) {
+      if (onRequireAuth) onRequireAuth();
+      alert('🔒 Authentication Required: Please sign in or create an account to complete ticket booking.');
+      return;
+    }
+
     setProcessing(true);
     const code = 'CV-' + Math.floor(100000 + Math.random() * 900000);
 
@@ -159,7 +165,7 @@ export const BookingModal = ({
     };
 
     try {
-      // 1. Create booking in backend if connected
+      // 1. Create booking in backend with JWT authentication
       const bookingRes = await api.createBooking(bookingPayload);
       const activeBooking = bookingRes?.booking || bookingPayload;
 
@@ -174,11 +180,9 @@ export const BookingModal = ({
       setConfirmedBooking(activeBooking);
       setStep(5);
       if (onBookingComplete) onBookingComplete(activeBooking);
-    } catch {
-      // Fallback offline confirmation
-      setConfirmedBooking(bookingPayload);
-      setStep(5);
-      if (onBookingComplete) onBookingComplete(bookingPayload);
+    } catch (err) {
+      console.error('Booking failed:', err);
+      alert(err.message || 'Booking transaction failed. Please ensure you are logged in.');
     } finally {
       setProcessing(false);
     }

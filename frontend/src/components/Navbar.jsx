@@ -229,22 +229,25 @@ export const Navbar = ({
             <span>Play 🎮</span>
           </button>
 
-          <button
-            onClick={onOpenMovieManager}
-            className="btn btn-secondary"
-            title="Manage 2026 Movies with Gemini Flash AI"
-            style={{
-              padding: '8px 14px',
-              fontSize: '0.85rem',
-              borderColor: 'rgba(139, 92, 246, 0.4)',
-              color: '#c4b5fd',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 6,
-            }}
-          >
-            <span>⚡ 2026 Movies</span>
-          </button>
+          {Boolean(user && (user.role === 'admin' || user.role === 'ADMIN')) && (
+            <button
+              onClick={onOpenMovieManager}
+              className="btn btn-secondary"
+              title="Admin Panel: Manage 2026 Movies with Gemini Flash AI"
+              style={{
+                padding: '8px 14px',
+                fontSize: '0.85rem',
+                borderColor: 'rgba(239, 68, 68, 0.5)',
+                color: '#fca5a5',
+                backgroundColor: 'rgba(239, 68, 68, 0.15)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+              }}
+            >
+              <span>🛡️ Movie Admin</span>
+            </button>
+          )}
 
           <button
             onClick={onOpenAi}

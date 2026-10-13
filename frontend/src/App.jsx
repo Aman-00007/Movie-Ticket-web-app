@@ -35,6 +35,18 @@ export function App() {
   // 5. MVC Arcade Game Controller
   const gameCtrl = useGameController();
 
+  // Admin check for privileged actions
+  const isAdmin = Boolean(authCtrl.user && (authCtrl.user.role === 'admin' || authCtrl.user.role === 'ADMIN'));
+
+  // Authentication check before booking tickets
+  const handleOpenBooking = (movie, options = null) => {
+    if (!authCtrl.user) {
+      authCtrl.openAuthModal();
+      return;
+    }
+    bookingCtrl.openBooking(movie, options);
+  };
+
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       {/* Navigation Bar */}
@@ -65,7 +77,7 @@ export function App() {
           theatres={bookingCtrl.theatres}
           selectedCity={movieCtrl.selectedCity}
           onBack={movieCtrl.closeMovieDetail}
-          onBookMovie={(movie, options) => bookingCtrl.openBooking(movie, options)}
+          onBookMovie={(movie, options) => handleOpenBooking(movie, options)}
           onWatchTrailer={movieCtrl.openTrailer}
           userLocation={bookingCtrl.userLocation}
           locating={bookingCtrl.locating}
@@ -73,6 +85,7 @@ export function App() {
         />
       ) : (
         <HomeView
+          user={authCtrl.user}
           movies={movieCtrl.movies}
           filteredMovies={movieCtrl.filteredMovies}
           loading={movieCtrl.loading}
@@ -82,7 +95,7 @@ export function App() {
           selectedGenre={movieCtrl.selectedGenre}
           onGenreChange={movieCtrl.setSelectedGenre}
           searchQuery={movieCtrl.searchQuery}
-          onBookMovie={bookingCtrl.openBooking}
+          onBookMovie={handleOpenBooking}
           onWatchTrailer={movieCtrl.openTrailer}
           onSelectMovie={movieCtrl.openMovieDetail}
           onDeleteMovie={movieCtrl.deleteMovie}
@@ -98,8 +111,8 @@ export function App() {
 
       {/* Modals & Sub-Views */}
 
-      {/* 2026 Movie Database Manager (Gemini Flash Web Search & Add / Delete) */}
-      {movieCtrl.movieManagerOpen && (
+      {/* 2026 Movie Database Manager (Gemini Flash Web Search & Add / Delete) - ADMIN ONLY */}
+      {movieCtrl.movieManagerOpen && isAdmin && (
         <MovieManagerModal
           movies={movieCtrl.movies}
           onClose={movieCtrl.closeMovieManager}
@@ -139,7 +152,7 @@ export function App() {
           onClose={aiCtrl.closeAiModal}
           onBookMovie={(movie) => {
             aiCtrl.closeAiModal();
-            bookingCtrl.openBooking(movie);
+            handleOpenBooking(movie);
           }}
         />
       )}

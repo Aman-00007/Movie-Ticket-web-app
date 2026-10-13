@@ -487,6 +487,11 @@ export const fallbackBeverages = [
   }
 ];
 
+const getAuthHeaders = () => {
+  const token = localStorage.getItem('cineverse_token');
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};
+
 export const api = {
   // ─── Movies API ───
   async getMovies() {
@@ -503,7 +508,7 @@ export const api = {
   async createMovie(movieData) {
     const res = await fetch(`${BASE_URL}/movies`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
       body: JSON.stringify(movieData),
     });
     const data = await res.json();
@@ -514,7 +519,7 @@ export const api = {
   async updateMovie(id, movieData) {
     const res = await fetch(`${BASE_URL}/movies/${id}`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
       body: JSON.stringify(movieData),
     });
     const data = await res.json();
@@ -525,6 +530,7 @@ export const api = {
   async deleteMovie(id) {
     const res = await fetch(`${BASE_URL}/movies/${id}`, {
       method: 'DELETE',
+      headers: { ...getAuthHeaders() },
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.message || 'Failed to delete movie');
@@ -534,7 +540,7 @@ export const api = {
   async aiSearchMovie(query, autoSave = true) {
     const res = await fetch(`${BASE_URL}/movies/ai-search`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
       body: JSON.stringify({ query, autoSave }),
     });
     const data = await res.json();
@@ -545,6 +551,7 @@ export const api = {
   async sync2026Movies() {
     const res = await fetch(`${BASE_URL}/movies/sync-2026`, {
       method: 'POST',
+      headers: { ...getAuthHeaders() },
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.message || 'Failed to sync 2026 movies');
@@ -581,12 +588,11 @@ export const api = {
   // ─── AI Concierge API ───
   async getAiRecommendation(payload) {
     try {
-      const token = localStorage.getItem('cineverse_token');
       const res = await fetch(`${BASE_URL}/ai/recommend`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          ...getAuthHeaders(),
         },
         body: JSON.stringify(payload),
       });
@@ -603,12 +609,11 @@ export const api = {
 
   async chatWithAi(message, history = []) {
     try {
-      const token = localStorage.getItem('cineverse_token');
       const res = await fetch(`${BASE_URL}/ai/chat`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          ...getAuthHeaders(),
         },
         body: JSON.stringify({ message, history }),
       });
@@ -622,54 +627,27 @@ export const api = {
     }
   },
 
-  // ─── Auth API ───
+  // ─── Auth API (PostgreSQL + JWT) ───
   async register(userData) {
-    try {
-      const res = await fetch(`${BASE_URL}/auth/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(userData),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Registration failed');
-      return data;
-    } catch {
-      const mockToken = 'mock_jwt_token_' + Date.now();
-      const mockUser = {
-        id: 'usr_' + Date.now(),
-        name: userData.name,
-        email: userData.email,
-        phone: userData.phone || '+91 9876543210',
-        city: userData.city || 'Mumbai',
-        role: 'user',
-      };
-      return { success: true, token: mockToken, user: mockUser, message: 'Account created!' };
-    }
+    const res = await fetch(`${BASE_URL}/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(userData),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || 'Registration failed');
+    return data;
   },
 
   async login(credentials) {
-    try {
-      const res = await fetch(`${BASE_URL}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(credentials),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Login failed');
-      return data;
-    } catch {
-      const isAdmin = credentials.email.includes('admin');
-      const mockToken = 'mock_jwt_token_' + Date.now();
-      const mockUser = {
-        id: isAdmin ? 'adm_1' : 'usr_1',
-        name: isAdmin ? 'Cinema Operations Manager' : 'Aman Sharma',
-        email: credentials.email,
-        phone: '+91 9876543210',
-        city: 'Mumbai',
-        role: isAdmin ? 'admin' : 'user',
-      };
-      return { success: true, token: mockToken, user: mockUser, message: 'Welcome back!' };
-    }
+    const res = await fetch(`${BASE_URL}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(credentials),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || 'Login failed');
+    return data;
   },
 
   async getMe() {
@@ -689,32 +667,21 @@ export const api = {
   },
 
   async createBooking(bookingData) {
-    try {
-      const token = localStorage.getItem('cineverse_token');
-      const res = await fetch(`${BASE_URL}/bookings`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify(bookingData),
-      });
-      if (!res.ok) throw new Error('Booking failed');
-      return await res.json();
-    } catch {
-      const bookingCode = 'CV-' + Math.random().toString(36).substring(2, 8).toUpperCase();
-      return {
-        success: true,
-        booking: {
-          id: 'mock_' + Date.now(),
-          booking_code: bookingCode,
-          ...bookingData,
-          status: 'confirmed',
-          payment_status: 'paid',
-          createdAt: new Date().toISOString(),
-        },
-      };
+    const token = localStorage.getItem('cineverse_token');
+    if (!token) {
+      throw new Error('Authentication required. Please log in to complete your booking.');
     }
+    const res = await fetch(`${BASE_URL}/bookings`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(bookingData),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || 'Booking failed');
+    return data;
   },
 
   async createPaymentIntent(bookingId) {
