@@ -666,6 +666,29 @@ export const api = {
     }
   },
 
+  async updateProfile(profileData) {
+    try {
+      const token = localStorage.getItem('cineverse_token');
+      if (token) {
+        const res = await fetch(`${BASE_URL}/auth/me`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(profileData),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          return data.user || profileData;
+        }
+      }
+    } catch (err) {
+      console.warn('Backend update failed, using local persistence:', err);
+    }
+    return profileData;
+  },
+
   async createBooking(bookingData) {
     const token = localStorage.getItem('cineverse_token');
     if (!token) {

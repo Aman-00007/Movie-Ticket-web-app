@@ -68,6 +68,12 @@ const initializeTables = async () => {
         created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
       );
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS favorite_genres JSONB DEFAULT '[]';
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS preferred_languages JSONB DEFAULT '[]';
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS preferred_formats JSONB DEFAULT '[]';
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS bio TEXT;
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS favorite_movie VARCHAR(200);
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS dob VARCHAR(30);
     `);
 
     // 2. Movies Table

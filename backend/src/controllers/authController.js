@@ -64,12 +64,34 @@ exports.getMe = async (req, res, next) => {
 
 exports.updateMe = async (req, res, next) => {
   try {
-    const { name, phone, city, avatar_url } = req.body;
+    const {
+      name,
+      phone,
+      city,
+      avatar_url,
+      bio,
+      favorite_genres,
+      preferred_languages,
+      preferred_formats,
+      favorite_movie,
+      dob,
+    } = req.body;
     const user = await User.findByPk(req.user.id);
     if (!user) return res.status(404).json({ success: false, message: 'User not found' });
 
-    await user.update({ name, phone, city, avatar_url });
-    res.json({ success: true, message: 'Profile updated', user });
+    await user.update({
+      name: name !== undefined ? name : user.name,
+      phone: phone !== undefined ? phone : user.phone,
+      city: city !== undefined ? city : user.city,
+      avatar_url: avatar_url !== undefined ? avatar_url : user.avatar_url,
+      bio: bio !== undefined ? bio : user.bio,
+      favorite_genres: favorite_genres !== undefined ? favorite_genres : user.favorite_genres,
+      preferred_languages: preferred_languages !== undefined ? preferred_languages : user.preferred_languages,
+      preferred_formats: preferred_formats !== undefined ? preferred_formats : user.preferred_formats,
+      favorite_movie: favorite_movie !== undefined ? favorite_movie : user.favorite_movie,
+      dob: dob !== undefined ? dob : user.dob,
+    });
+    res.json({ success: true, message: 'Profile updated successfully', user });
   } catch (err) {
     next(err);
   }

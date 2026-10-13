@@ -113,6 +113,33 @@ export function useAuthController() {
     return await login(credentials);
   }, [login]);
 
+  // Update User Profile
+  const updateProfile = useCallback(async (updates) => {
+    setLoading(true);
+    setAuthError(null);
+    try {
+      let mergedData = { ...(user ? { ...user } : {}), ...updates };
+      try {
+        const apiUser = await api.updateProfile(updates);
+        if (apiUser) {
+          mergedData = { ...mergedData, ...apiUser };
+        }
+      } catch (err) {
+        console.warn('API update failed, updating locally:', err.message);
+      }
+
+      const updatedUser = new UserModel(mergedData);
+      UserModel.saveSession(token, updatedUser);
+      setUser(updatedUser);
+      return { success: true, user: updatedUser };
+    } catch (err) {
+      setAuthError(err.message || 'Failed to update profile');
+      return { success: false, message: err.message };
+    } finally {
+      setLoading(false);
+    }
+  }, [user, token]);
+
   // Logout
   const logout = useCallback(() => {
     UserModel.clearSession();
@@ -132,6 +159,7 @@ export function useAuthController() {
     register,
     login,
     quickLogin,
+    updateProfile,
     logout,
   };
 }

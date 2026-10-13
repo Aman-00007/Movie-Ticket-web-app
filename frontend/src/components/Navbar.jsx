@@ -15,6 +15,7 @@ export const Navbar = ({
   onOpenSnacks,
   onOpenTickets,
   onOpenMyBookingsPage,
+  onOpenProfilePage,
   onOpenMovieManager,
   user,
   onOpenAuth,
@@ -27,6 +28,7 @@ export const Navbar = ({
 }) => {
   const [cityDropdownOpen, setCityDropdownOpen] = useState(false);
   const [searchFocused, setSearchFocused] = useState(false);
+  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
 
   // Dynamic live search matching across Title, Genre, Language, Cast, and Director
   const searchMatches = searchQuery && searchQuery.trim()
@@ -539,40 +541,368 @@ export const Navbar = ({
             <span>AI CineBot</span>
           </button>
 
+          {/* ─── SLEEK CIRCULAR USER AVATAR WITH DROPDOWN MENU ─── */}
           {user ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <div
-                style={{
-                  fontSize: '0.8rem',
-                  color: 'var(--text-secondary)',
-                  fontWeight: 600,
-                  padding: '4px 8px',
-                  backgroundColor: 'rgba(255,255,255,0.05)',
-                  borderRadius: 6,
-                }}
-              >
-                👤 {user.name || user.email?.split('@')[0]}
-              </div>
+            <div style={{ position: 'relative' }}>
               <button
-                onClick={onLogout}
+                onClick={() => setUserDropdownOpen(!userDropdownOpen)}
                 style={{
-                  background: 'none',
-                  border: 'none',
-                  color: 'var(--text-muted)',
-                  fontSize: '0.8rem',
+                  width: 40,
+                  height: 40,
+                  borderRadius: '50%',
+                  padding: 0,
+                  border: user.role === 'admin' ? '2px solid #ef4444' : '2px solid rgba(229, 9, 20, 0.6)',
+                  background: 'linear-gradient(135deg, #e50914, #7c3aed)',
+                  color: 'white',
                   cursor: 'pointer',
-                  padding: '6px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '0.9rem',
+                  fontWeight: 900,
+                  boxShadow: '0 0 12px rgba(229, 9, 20, 0.35)',
+                  position: 'relative',
+                  outline: 'none',
+                  transition: 'transform 0.2s, box-shadow 0.2s',
                 }}
-                title="Log out"
+                title={`${user.name || 'User'} - Click for profile & settings`}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'scale(1.06)';
+                  e.currentTarget.style.boxShadow = '0 0 16px rgba(229, 9, 20, 0.6)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'scale(1)';
+                  e.currentTarget.style.boxShadow = '0 0 12px rgba(229, 9, 20, 0.35)';
+                }}
               >
-                Logout
+                {user.avatar_url ? (
+                  <img
+                    src={user.avatar_url}
+                    alt={user.name}
+                    style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }}
+                  />
+                ) : (
+                  <span>
+                    {(user.name || 'U')
+                      .split(' ')
+                      .filter(Boolean)
+                      .map((n) => n[0])
+                      .join('')
+                      .substring(0, 2)
+                      .toUpperCase() || 'U'}
+                  </span>
+                )}
+
+                {/* Role / Notification Indicator Dot */}
+                <span
+                  style={{
+                    position: 'absolute',
+                    bottom: -1,
+                    right: -1,
+                    width: 12,
+                    height: 12,
+                    borderRadius: '50%',
+                    backgroundColor: user.role === 'admin' ? '#ef4444' : '#10b981',
+                    border: '2px solid #0b0d14',
+                  }}
+                />
               </button>
+
+              {/* ─── USER / ADMIN PROFILE DROPDOWN MENU ─── */}
+              {userDropdownOpen && (
+                <div
+                  className="glass"
+                  style={{
+                    position: 'absolute',
+                    top: '125%',
+                    right: 0,
+                    width: 270,
+                    borderRadius: 'var(--radius-md)',
+                    backgroundColor: 'rgba(17, 22, 34, 0.98)',
+                    border: '1px solid rgba(255, 255, 255, 0.12)',
+                    boxShadow: '0 16px 40px rgba(0, 0, 0, 0.85)',
+                    zIndex: 500,
+                    padding: 0,
+                    overflow: 'hidden',
+                    animation: 'fadeIn 0.18s ease',
+                  }}
+                >
+                  {/* Dropdown Header: User info & profile completeness */}
+                  <div
+                    style={{
+                      padding: '16px',
+                      backgroundColor: 'rgba(255, 255, 255, 0.03)',
+                      borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                      <div
+                        style={{
+                          width: 44,
+                          height: 44,
+                          borderRadius: '50%',
+                          background: 'linear-gradient(135deg, #e50914, #7c3aed)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: '1rem',
+                          fontWeight: 900,
+                          color: 'white',
+                          flexShrink: 0,
+                        }}
+                      >
+                        {(user.name || 'U')
+                          .split(' ')
+                          .filter(Boolean)
+                          .map((n) => n[0])
+                          .join('')
+                          .substring(0, 2)
+                          .toUpperCase() || 'U'}
+                      </div>
+                      <div style={{ overflow: 'hidden' }}>
+                        <div
+                          style={{
+                            fontWeight: 800,
+                            fontSize: '0.95rem',
+                            color: 'white',
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                          }}
+                        >
+                          {user.name || 'CineVerse User'}
+                        </div>
+                        <div
+                          style={{
+                            fontSize: '0.75rem',
+                            color: 'var(--text-secondary)',
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                          }}
+                        >
+                          {user.email}
+                        </div>
+                        <div style={{ marginTop: 4 }}>
+                          <span
+                            className="badge"
+                            style={{
+                              backgroundColor: user.role === 'admin' ? 'rgba(239, 68, 68, 0.2)' : 'rgba(245, 166, 35, 0.2)',
+                              color: user.role === 'admin' ? '#f87171' : 'var(--accent-gold)',
+                              fontSize: '0.65rem',
+                              padding: '2px 6px',
+                              fontWeight: 800,
+                              borderRadius: 4,
+                            }}
+                          >
+                            {user.role === 'admin' ? '🛡️ ADMINISTRATOR' : '⭐ VIP CINEPHILE'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Profile Percentage Counter Mini Bar */}
+                    <div
+                      onClick={() => {
+                        setUserDropdownOpen(false);
+                        if (onOpenProfilePage) onOpenProfilePage();
+                      }}
+                      style={{
+                        marginTop: 12,
+                        paddingTop: 10,
+                        borderTop: '1px solid rgba(255, 255, 255, 0.05)',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', marginBottom: 4 }}>
+                        <span style={{ color: 'var(--text-secondary)' }}>Profile Information</span>
+                        <span style={{ color: '#4ade80', fontWeight: 800 }}>
+                          {typeof user.getProfileCompletionDetails === 'function'
+                            ? `${user.getProfileCompletionDetails().percentage}%`
+                            : '80%'}
+                        </span>
+                      </div>
+                      <div
+                        style={{
+                          width: '100%',
+                          height: 5,
+                          backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                          borderRadius: 3,
+                          overflow: 'hidden',
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: `${typeof user.getProfileCompletionDetails === 'function'
+                              ? user.getProfileCompletionDetails().percentage
+                              : 80}%`,
+                            height: '100%',
+                            backgroundColor: '#4ade80',
+                            borderRadius: 3,
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Dropdown Menu Items */}
+                  <div style={{ padding: '6px' }}>
+                    <div
+                      onClick={() => {
+                        setUserDropdownOpen(false);
+                        if (onOpenProfilePage) onOpenProfilePage();
+                      }}
+                      style={{
+                        padding: '10px 14px',
+                        borderRadius: 8,
+                        cursor: 'pointer',
+                        fontSize: '0.85rem',
+                        fontWeight: 600,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        color: 'white',
+                        transition: 'background-color 0.15s',
+                      }}
+                      onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.06)')}
+                      onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+                    >
+                      <span style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <span>👤</span>
+                        <span>Edit Profile & Preferences</span>
+                      </span>
+                      <span style={{ fontSize: '0.72rem', color: 'var(--accent-red)', fontWeight: 700 }}>Edit →</span>
+                    </div>
+
+                    <div
+                      onClick={() => {
+                        setUserDropdownOpen(false);
+                        if (onOpenMyBookingsPage) {
+                          onOpenMyBookingsPage();
+                        } else if (onOpenTickets) {
+                          onOpenTickets();
+                        }
+                      }}
+                      style={{
+                        padding: '10px 14px',
+                        borderRadius: 8,
+                        cursor: 'pointer',
+                        fontSize: '0.85rem',
+                        fontWeight: 600,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        color: 'white',
+                        transition: 'background-color 0.15s',
+                      }}
+                      onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.06)')}
+                      onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+                    >
+                      <span style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <span>🎟️</span>
+                        <span>My Bookings & Passes</span>
+                      </span>
+                      {ticketCount > 0 && (
+                        <span
+                          style={{
+                            backgroundColor: 'var(--accent-red)',
+                            color: 'white',
+                            borderRadius: 10,
+                            fontSize: '0.68rem',
+                            padding: '1px 6px',
+                            fontWeight: 800,
+                          }}
+                        >
+                          {ticketCount}
+                        </span>
+                      )}
+                    </div>
+
+                    {Boolean(user && (user.role === 'admin' || user.role === 'ADMIN')) && (
+                      <div
+                        onClick={() => {
+                          setUserDropdownOpen(false);
+                          if (onOpenMovieManager) onOpenMovieManager();
+                        }}
+                        style={{
+                          padding: '10px 14px',
+                          borderRadius: 8,
+                          cursor: 'pointer',
+                          fontSize: '0.85rem',
+                          fontWeight: 600,
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 10,
+                          color: '#fca5a5',
+                          transition: 'background-color 0.15s',
+                        }}
+                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'rgba(239,68,68,0.12)')}
+                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+                      >
+                        <span>🛡️</span>
+                        <span>Manage 2026 Movies</span>
+                      </div>
+                    )}
+
+                    <div
+                      onClick={() => {
+                        setUserDropdownOpen(false);
+                        if (onOpenSnacks) onOpenSnacks();
+                      }}
+                      style={{
+                        padding: '10px 14px',
+                        borderRadius: 8,
+                        cursor: 'pointer',
+                        fontSize: '0.85rem',
+                        fontWeight: 600,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 10,
+                        color: 'var(--text-secondary)',
+                        transition: 'background-color 0.15s',
+                      }}
+                      onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.06)')}
+                      onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+                    >
+                      <span>🍿</span>
+                      <span>Food & Concessions</span>
+                    </div>
+
+                    <div style={{ height: 1, backgroundColor: 'rgba(255, 255, 255, 0.08)', margin: '6px 0' }} />
+
+                    {/* Logout Option in Dropdown */}
+                    <div
+                      onClick={() => {
+                        setUserDropdownOpen(false);
+                        if (onLogout) onLogout();
+                      }}
+                      style={{
+                        padding: '10px 14px',
+                        borderRadius: 8,
+                        cursor: 'pointer',
+                        fontSize: '0.85rem',
+                        fontWeight: 700,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 10,
+                        color: '#f87171',
+                        transition: 'background-color 0.15s',
+                      }}
+                      onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.15)')}
+                      onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+                    >
+                      <span>🚪</span>
+                      <span>Sign Out</span>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           ) : (
             <button
               onClick={onOpenAuth}
               className="btn btn-secondary"
-              style={{ padding: '8px 14px', fontSize: '0.85rem' }}
+              style={{ padding: '8px 16px', fontSize: '0.85rem' }}
             >
               Sign In
             </button>

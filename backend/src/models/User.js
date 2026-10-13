@@ -12,6 +12,12 @@ const User = sequelize.define('User', {
   city: { type: DataTypes.STRING(100), defaultValue: 'Mumbai' },
   role: { type: DataTypes.ENUM('user', 'admin'), defaultValue: 'user' },
   is_active: { type: DataTypes.BOOLEAN, defaultValue: true },
+  favorite_genres: { type: DataTypes.JSONB, defaultValue: [] },
+  preferred_languages: { type: DataTypes.JSONB, defaultValue: [] },
+  preferred_formats: { type: DataTypes.JSONB, defaultValue: [] },
+  bio: { type: DataTypes.TEXT },
+  favorite_movie: { type: DataTypes.STRING(200) },
+  dob: { type: DataTypes.STRING(30) },
 }, {
   tableName: 'users',
   instanceMethods: {
