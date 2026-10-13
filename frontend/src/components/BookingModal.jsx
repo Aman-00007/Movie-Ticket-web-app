@@ -156,8 +156,15 @@ export const BookingModal = ({
       theatre_name: selectedTheatre?.name || 'CineVerse IMAX Palladium',
       show_time: selectedTime,
       show_date: 'Today, ' + new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-      seats: selectedSeats.map((s) => s.id),
-      beverages: Object.values(snackCart).map((i) => ({ name: i.snack.name, qty: i.qty, price: i.snack.price })),
+      show_id: selectedTheatre?.show_id || (movie.shows && movie.shows[0]?.id) || undefined,
+      seat_ids: selectedSeats.map((s) => s.id),
+      seats: selectedSeats,
+      beverages: Object.values(snackCart).map((i) => ({ name: i.snack.name, quantity: i.qty, qty: i.qty, price: i.snack.price })),
+      ticket_price: ticketSubtotal,
+      beverage_price: snacksSubtotal,
+      convenience_fee: convenienceFee,
+      discount: discountAmount,
+      promo_code: promoCode,
       total_amount: grandTotal,
       payment_method: paymentMethod,
       gateway: 'Stripe Instant Checkout',
@@ -708,72 +715,164 @@ export const BookingModal = ({
               <span className="badge badge-gold">🍿 Save up to 25% Online</span>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 14 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 16 }}>
               {beverages.map((item) => {
                 const qty = snackCart[item.id]?.qty || 0;
+                const categoryLabel =
+                  item.category === 'popcorn'
+                    ? '🍿 Popcorn'
+                    : item.category === 'drinks'
+                    ? '🥤 Cold Drinks'
+                    : item.category === 'combos'
+                    ? '⭐ Cinema Combo'
+                    : '🧀 Gourmet Snacks';
+
                 return (
                   <div
                     key={item.id}
                     style={{
                       backgroundColor: '#141824',
                       borderRadius: 14,
-                      padding: 16,
-                      border: '1px solid rgba(255, 255, 255, 0.08)',
+                      border: qty > 0 ? '1.5px solid var(--accent-red)' : '1px solid rgba(255, 255, 255, 0.08)',
+                      overflow: 'hidden',
                       display: 'flex',
                       flexDirection: 'column',
                       justifyContent: 'space-between',
+                      transition: 'all 0.2s ease',
+                      boxShadow: qty > 0 ? '0 8px 24px rgba(229, 9, 20, 0.25)' : 'none',
                     }}
                   >
-                    <div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
-                        <h4 style={{ fontSize: '0.95rem', fontWeight: 800, color: 'white', margin: 0 }}>{item.name}</h4>
-                        <span style={{ fontWeight: 800, color: 'var(--accent-gold)' }}>₹{item.price}</span>
+                    {/* Gourmet Snack Image Header */}
+                    <div style={{ position: 'relative', width: '100%', height: 135, overflow: 'hidden', backgroundColor: '#0a0d14' }}>
+                      <img
+                        src={item.image_url || 'https://images.unsplash.com/photo-1578849278619-e73505e9610f?w=400'}
+                        alt={item.name}
+                        onError={(e) => {
+                          e.target.src = 'https://images.unsplash.com/photo-1578849278619-e73505e9610f?w=400';
+                        }}
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover',
+                          display: 'block',
+                          transition: 'transform 0.3s ease',
+                        }}
+                      />
+                      {/* Gradient Overlay for Legibility */}
+                      <div
+                        style={{
+                          position: 'absolute',
+                          inset: 0,
+                          background: 'linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(20,24,36,0.85) 100%)',
+                        }}
+                      />
+                      {/* Category Badge */}
+                      <div
+                        style={{
+                          position: 'absolute',
+                          top: 10,
+                          left: 10,
+                          padding: '3px 8px',
+                          borderRadius: 6,
+                          fontSize: '0.7rem',
+                          fontWeight: 700,
+                          backgroundColor: 'rgba(0, 0, 0, 0.75)',
+                          color: '#f59e0b',
+                          backdropFilter: 'blur(4px)',
+                          border: '1px solid rgba(245, 158, 11, 0.3)',
+                        }}
+                      >
+                        {categoryLabel}
                       </div>
-                      <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', margin: 0 }}>
-                        {item.description || 'Freshly prepared hot and crunchy cinema favorite.'}
-                      </p>
+                      {/* Veg indicator */}
+                      <div
+                        style={{
+                          position: 'absolute',
+                          top: 10,
+                          right: 10,
+                          padding: '3px 8px',
+                          borderRadius: 6,
+                          fontSize: '0.7rem',
+                          fontWeight: 700,
+                          backgroundColor: 'rgba(0, 0, 0, 0.75)',
+                          color: '#10b981',
+                          backdropFilter: 'blur(4px)',
+                          border: '1px solid rgba(16, 185, 129, 0.3)',
+                        }}
+                      >
+                        🟢 100% Veg
+                      </div>
                     </div>
 
-                    <div style={{ marginTop: 14, display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
-                      {qty === 0 ? (
-                        <button
-                          onClick={() => updateSnackQty(item, 1)}
-                          className="btn btn-secondary"
-                          style={{ padding: '6px 16px', fontSize: '0.8rem', borderRadius: 20 }}
-                        >
-                          + Add
-                        </button>
-                      ) : (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: '#1e2436', borderRadius: 20, padding: '4px 8px' }}>
-                          <button
-                            onClick={() => updateSnackQty(item, -1)}
-                            style={{
-                              background: 'none',
-                              border: 'none',
-                              color: 'white',
-                              fontSize: '1.1rem',
-                              cursor: 'pointer',
-                              width: 24,
-                            }}
-                          >
-                            -
-                          </button>
-                          <span style={{ fontWeight: 800, fontSize: '0.9rem', color: 'var(--accent-red)' }}>{qty}</span>
+                    {/* Content Details */}
+                    <div style={{ padding: '14px 16px 16px', display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'space-between' }}>
+                      <div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6, gap: 8 }}>
+                          <h4 style={{ fontSize: '0.98rem', fontWeight: 800, color: 'white', margin: 0, lineHeight: 1.3 }}>
+                            {item.name}
+                          </h4>
+                          <span style={{ fontWeight: 800, color: 'var(--accent-gold)', fontSize: '1.05rem', whiteSpace: 'nowrap' }}>
+                            ₹{item.price}
+                          </span>
+                        </div>
+                        <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', margin: 0, lineHeight: 1.4 }}>
+                          {item.description || 'Freshly prepared hot and crunchy cinema favorite.'}
+                        </p>
+                      </div>
+
+                      <div style={{ marginTop: 14, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ fontSize: '0.74rem', color: 'var(--text-secondary)' }}>
+                          {qty > 0 ? `Subtotal: ₹${item.price * qty}` : 'Delivered to Seat'}
+                        </span>
+                        {qty === 0 ? (
                           <button
                             onClick={() => updateSnackQty(item, 1)}
+                            className="btn btn-secondary"
                             style={{
-                              background: 'none',
-                              border: 'none',
-                              color: 'white',
-                              fontSize: '1.1rem',
-                              cursor: 'pointer',
-                              width: 24,
+                              padding: '6px 18px',
+                              fontSize: '0.82rem',
+                              fontWeight: 700,
+                              borderRadius: 20,
+                              backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                              border: '1px solid rgba(255, 255, 255, 0.2)',
                             }}
                           >
-                            +
+                            + Add
                           </button>
-                        </div>
-                      )}
+                        ) : (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: '#1e2436', borderRadius: 20, padding: '4px 10px', border: '1px solid var(--accent-red)' }}>
+                            <button
+                              onClick={() => updateSnackQty(item, -1)}
+                              style={{
+                                background: 'none',
+                                border: 'none',
+                                color: 'white',
+                                fontSize: '1.1rem',
+                                cursor: 'pointer',
+                                width: 22,
+                                fontWeight: 800,
+                              }}
+                            >
+                              -
+                            </button>
+                            <span style={{ fontWeight: 800, fontSize: '0.92rem', color: 'var(--accent-red)' }}>{qty}</span>
+                            <button
+                              onClick={() => updateSnackQty(item, 1)}
+                              style={{
+                                background: 'none',
+                                border: 'none',
+                                color: 'white',
+                                fontSize: '1.1rem',
+                                cursor: 'pointer',
+                                width: 22,
+                                fontWeight: 800,
+                              }}
+                            >
+                              +
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 );

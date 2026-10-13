@@ -1,10 +1,14 @@
 import React from 'react';
 import { StarIcon, PlayIcon, TicketIcon } from './Icons';
+import { getMovieBookingAvailability } from '../models';
 
 export const MovieCard = ({ movie, onBook, onWatchTrailer, onSelectMovie, onDelete }) => {
+  const availability = getMovieBookingAvailability(movie);
+
   const handleCardClick = () => {
     if (onSelectMovie) onSelectMovie(movie);
-    else onBook(movie);
+    else if (availability.canBook) onBook(movie);
+    else onWatchTrailer(movie);
   };
 
   return (
@@ -54,25 +58,33 @@ export const MovieCard = ({ movie, onBook, onWatchTrailer, onSelectMovie, onDele
           }}
         />
 
-        {/* Rating Badge */}
+        {/* Rating or Availability Badge */}
         <div style={{
           position: 'absolute',
           top: 10,
           left: 10,
-          backgroundColor: 'rgba(11, 13, 20, 0.85)',
+          backgroundColor: 'rgba(11, 13, 20, 0.88)',
           backdropFilter: 'blur(8px)',
           padding: '4px 8px',
           borderRadius: 'var(--radius-sm)',
           display: 'flex',
           alignItems: 'center',
           gap: 4,
-          fontSize: '0.8rem',
-          fontWeight: 700,
-          color: 'var(--accent-gold)',
-          border: '1px solid rgba(245, 158, 11, 0.3)',
+          fontSize: '0.75rem',
+          fontWeight: 800,
+          color: availability.badgeColor,
+          border: `1px solid ${availability.badgeColor}45`,
         }}>
-          <StarIcon size={14} fill="#f59e0b" />
-          <span>{movie.rating}</span>
+          {availability.type === 'NOW_SHOWING' ? (
+            <>
+              <StarIcon size={13} fill="#f59e0b" />
+              <span>{movie.rating}</span>
+            </>
+          ) : availability.type === 'ADVANCE_BOOKING' ? (
+            <span>⚡ ADVANCE OPEN</span>
+          ) : (
+            <span>📅 {movie.release_date}</span>
+          )}
         </div>
 
         {/* Certification badge */}
@@ -196,21 +208,64 @@ export const MovieCard = ({ movie, onBook, onWatchTrailer, onSelectMovie, onDele
           <button
             onClick={() => handleCardClick()}
             className="btn btn-secondary"
-            style={{ flex: 1, padding: '9px 0', fontSize: '0.85rem' }}
+            style={{ flex: 1, padding: '9px 0', fontSize: '0.82rem', fontWeight: 700 }}
           >
             Details
           </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onBook(movie);
-            }}
-            className="btn btn-primary"
-            style={{ flex: 1.2, padding: '9px 0', fontSize: '0.85rem' }}
-          >
-            <TicketIcon size={15} />
-            Book
-          </button>
+
+          {availability.type === 'NOW_SHOWING' ? (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onBook(movie);
+              }}
+              className="btn btn-primary"
+              style={{ flex: 1.2, padding: '9px 0', fontSize: '0.82rem', fontWeight: 800 }}
+            >
+              <TicketIcon size={14} />
+              Book
+            </button>
+          ) : availability.type === 'ADVANCE_BOOKING' ? (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onBook(movie, { isAdvanceBooking: true, releaseDate: movie.release_date });
+              }}
+              className="btn btn-primary"
+              style={{
+                flex: 1.35,
+                padding: '9px 0',
+                fontSize: '0.78rem',
+                fontWeight: 800,
+                backgroundColor: '#f59e0b',
+                borderColor: '#d97706',
+                color: '#000',
+              }}
+            >
+              <TicketIcon size={14} />
+              Pre-Book
+            </button>
+          ) : (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onWatchTrailer(movie);
+              }}
+              className="btn btn-secondary"
+              style={{
+                flex: 1.25,
+                padding: '9px 0',
+                fontSize: '0.8rem',
+                fontWeight: 700,
+                backgroundColor: 'rgba(239, 68, 68, 0.15)',
+                borderColor: 'rgba(239, 68, 68, 0.4)',
+                color: '#f87171',
+              }}
+            >
+              <PlayIcon size={13} />
+              Trailer
+            </button>
+          )}
         </div>
       </div>
     </div>
