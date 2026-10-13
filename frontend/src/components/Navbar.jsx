@@ -155,62 +155,73 @@ export const Navbar = ({
             </button>
 
             {cityDropdownOpen && (
-              <div
-                className="glass"
-                style={{
-                  position: 'absolute',
-                  top: '115%',
-                  left: 0,
-                  width: 220,
-                  borderRadius: 'var(--radius-md)',
-                  padding: 10,
-                  boxShadow: 'var(--shadow-lg)',
-                  zIndex: 200,
-                }}
-              >
-                <button
-                  onClick={handleDetectLocation}
+              <>
+                <div
+                  onClick={() => setCityDropdownOpen(false)}
                   style={{
-                    width: '100%',
-                    padding: '8px 12px',
-                    backgroundColor: 'rgba(229, 9, 20, 0.1)',
-                    border: '1px solid rgba(229, 9, 20, 0.3)',
-                    color: '#ff4d58',
-                    borderRadius: 8,
-                    cursor: 'pointer',
-                    fontSize: '0.8rem',
-                    fontWeight: 600,
-                    marginBottom: 8,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 6,
+                    position: 'fixed',
+                    inset: 0,
+                    zIndex: 190,
+                    cursor: 'default',
+                  }}
+                />
+                <div
+                  className="glass"
+                  style={{
+                    position: 'absolute',
+                    top: '115%',
+                    left: 0,
+                    width: 220,
+                    borderRadius: 'var(--radius-md)',
+                    padding: 10,
+                    boxShadow: 'var(--shadow-lg)',
+                    zIndex: 200,
                   }}
                 >
-                  <MapPinIcon size={14} />
-                  {locating ? 'Detecting GPS...' : '📍 Auto-detect GPS'}
-                </button>
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: '4px 6px 6px' }}>POPULAR CITIES</div>
-                {CITIES.map((c) => (
-                  <div
-                    key={c}
-                    onClick={() => {
-                      onSelectCity(c);
-                      setCityDropdownOpen(false);
-                    }}
+                  <button
+                    onClick={handleDetectLocation}
                     style={{
+                      width: '100%',
                       padding: '8px 12px',
-                      borderRadius: 6,
+                      backgroundColor: 'rgba(229, 9, 20, 0.1)',
+                      border: '1px solid rgba(229, 9, 20, 0.3)',
+                      color: '#ff4d58',
+                      borderRadius: 8,
                       cursor: 'pointer',
-                      fontSize: '0.85rem',
-                      color: selectedCity === c ? 'var(--accent-red)' : 'var(--text-primary)',
-                      fontWeight: selectedCity === c ? 700 : 500,
-                      backgroundColor: selectedCity === c ? 'rgba(255,255,255,0.05)' : 'transparent',
+                      fontSize: '0.8rem',
+                      fontWeight: 600,
+                      marginBottom: 8,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 6,
                     }}
                   >
-                    {c}
-                  </div>
-                ))}
-              </div>
+                    <MapPinIcon size={14} />
+                    {locating ? 'Detecting GPS...' : '📍 Auto-detect GPS'}
+                  </button>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: '4px 6px 6px' }}>POPULAR CITIES</div>
+                  {CITIES.map((c) => (
+                    <div
+                      key={c}
+                      onClick={() => {
+                        onSelectCity(c);
+                        setCityDropdownOpen(false);
+                      }}
+                      style={{
+                        padding: '8px 12px',
+                        borderRadius: 6,
+                        cursor: 'pointer',
+                        fontSize: '0.85rem',
+                        color: selectedCity === c ? 'var(--accent-red)' : 'var(--text-primary)',
+                        fontWeight: selectedCity === c ? 700 : 500,
+                        backgroundColor: selectedCity === c ? 'rgba(255,255,255,0.05)' : 'transparent',
+                      }}
+                    >
+                      {c}
+                    </div>
+                  ))}
+                </div>
+              </>
             )}
           </div>
         </div>
@@ -610,9 +621,19 @@ export const Navbar = ({
 
               {/* ─── USER / ADMIN PROFILE DROPDOWN MENU ─── */}
               {userDropdownOpen && (
-                <div
-                  className="glass"
-                  style={{
+                <>
+                  <div
+                    onClick={() => setUserDropdownOpen(false)}
+                    style={{
+                      position: 'fixed',
+                      inset: 0,
+                      zIndex: 490,
+                      cursor: 'default',
+                    }}
+                  />
+                  <div
+                    className="glass"
+                    style={{
                     position: 'absolute',
                     top: '125%',
                     right: 0,
@@ -896,6 +917,7 @@ export const Navbar = ({
                     </div>
                   </div>
                 </div>
+                </>
               )}
             </div>
           ) : (
