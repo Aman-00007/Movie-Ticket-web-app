@@ -34,6 +34,7 @@ export const HeroBanner = ({ movies, onBookMovie, onWatchTrailer }) => {
       <img
         src={current.backdrop_url || current.poster_url}
         alt={current.title}
+        referrerPolicy="no-referrer"
         style={{
           position: 'absolute',
           inset: 0,
@@ -42,6 +43,9 @@ export const HeroBanner = ({ movies, onBookMovie, onWatchTrailer }) => {
           objectFit: 'cover',
           filter: 'brightness(0.4) saturate(1.2)',
           transition: 'all 0.7s ease-in-out',
+        }}
+        onError={(e) => {
+          e.currentTarget.src = 'https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?w=1200&auto=format&fit=crop&q=80';
         }}
       />
 

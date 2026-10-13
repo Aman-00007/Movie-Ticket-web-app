@@ -30,6 +30,7 @@ export const MovieCard = ({ movie, onBook, onWatchTrailer }) => {
         <img
           src={movie.poster_url}
           alt={movie.title}
+          referrerPolicy="no-referrer"
           style={{
             position: 'absolute',
             inset: 0,

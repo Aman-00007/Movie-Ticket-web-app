@@ -61,6 +61,10 @@ export const TicketsModal = ({ bookings, onClose }) => {
                   <img
                     src={b.movie_poster}
                     alt={b.movie_title}
+                    referrerPolicy="no-referrer"
+                    onError={(e) => {
+                      e.currentTarget.src = 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=800&auto=format&fit=crop&q=80';
+                    }}
                     style={{ width: 64, height: 90, objectFit: 'cover', borderRadius: 8 }}
                   />
                 )}

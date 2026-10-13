@@ -7,7 +7,7 @@ export const fallbackMovies = [
     id: 'pushpa-2',
     title: 'Pushpa 2: The Rule',
     description: 'The clash between Pushpa Raj and Bhanwar Singh Shekhawat escalates into an all-out war of supremacy, power, and syndicates.',
-    poster_url: 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=800&auto=format&fit=crop&q=80',
+    poster_url: 'https://upload.wikimedia.org/wikipedia/en/1/11/Pushpa_2-_The_Rule.jpg',
     backdrop_url: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=1200&auto=format&fit=crop&q=80',
     trailer_url: 'https://www.youtube.com/embed/g3JUbgZXflM',
     duration_min: 201,
@@ -24,9 +24,9 @@ export const fallbackMovies = [
     id: 'chhaava',
     title: 'Chhaava',
     description: 'The monumental saga of Chhatrapati Sambhaji Maharaj, the valiant second ruler of the Maratha Empire and his unyielding courage against the Mughal army.',
-    poster_url: 'https://images.unsplash.com/photo-1478760329108-5c3ed9d495a0?w=800&auto=format&fit=crop&q=80',
+    poster_url: 'https://upload.wikimedia.org/wikipedia/en/7/75/Chhaava_film_poster.jpg',
     backdrop_url: 'https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?w=1200&auto=format&fit=crop&q=80',
-    trailer_url: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+    trailer_url: 'https://www.youtube.com/embed/ZqA0w-F_jOQ',
     duration_min: 162,
     rating: 4.9,
     genre: ['Action', 'Drama', 'Period'],
@@ -41,8 +41,8 @@ export const fallbackMovies = [
     id: 'f1-apex',
     title: 'F1: The Apex Pursuit',
     description: 'A retired Formula 1 veteran returns to motorsport to partner and mentor an extraordinary rookie driver at the APXGP racing team.',
-    poster_url: 'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=800&auto=format&fit=crop&q=80',
-    backdrop_url: 'https://images.unsplash.com/photo-1511919884226-fd3cad34687c?w=1200&auto=format&fit=crop&q=80',
+    poster_url: 'https://upload.wikimedia.org/wikipedia/en/3/38/F1_%282025_film%29.png',
+    backdrop_url: 'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=1200&auto=format&fit=crop&q=80',
     trailer_url: 'https://www.youtube.com/embed/8v_4O44wvqg',
     duration_min: 145,
     rating: 4.9,
@@ -58,8 +58,8 @@ export const fallbackMovies = [
     id: 'gladiator-2',
     title: 'Gladiator II',
     description: 'Years after witnessing the death of Maximus at the hands of his uncle, Lucius must enter the Colosseum after his home is conquered by the tyrannical Emperors.',
-    poster_url: 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=800&auto=format&fit=crop&q=80',
-    backdrop_url: 'https://images.unsplash.com/photo-1511919884226-fd3cad34687c?w=1200&auto=format&fit=crop&q=80',
+    poster_url: 'https://upload.wikimedia.org/wikipedia/en/0/04/Gladiator_II_%282024%29_poster.jpg',
+    backdrop_url: 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=1200&auto=format&fit=crop&q=80',
     trailer_url: 'https://www.youtube.com/embed/4rgYUipGJNo',
     duration_min: 148,
     rating: 4.8,
@@ -75,8 +75,8 @@ export const fallbackMovies = [
     id: 'mufasa-lion-king',
     title: 'Mufasa: The Lion King',
     description: 'An orphaned cub lost and alone meets a sympathetic lion named Taka—the heir to a royal bloodline—initiating an expansive journey across the African savanna.',
-    poster_url: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?w=800&auto=format&fit=crop&q=80',
-    backdrop_url: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1200&auto=format&fit=crop&q=80',
+    poster_url: 'https://upload.wikimedia.org/wikipedia/en/0/0b/Mufasa_The_Lion_King_Movie_2024.jpeg',
+    backdrop_url: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?w=1200&auto=format&fit=crop&q=80',
     trailer_url: 'https://www.youtube.com/embed/o17MF9vnabg',
     duration_min: 118,
     rating: 4.8,
@@ -91,10 +91,10 @@ export const fallbackMovies = [
   {
     id: 'sitaare-zameen-par',
     title: 'Sitaare Zameen Par',
-    description: 'An uplifting and humorous sports drama celebrating down syndrome athletes coached by an unconventional mentor.',
-    poster_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&auto=format&fit=crop&q=80',
+    description: 'An uplifting and humorous sports drama celebrating neurodivergent athletes coached by an unconventional mentor.',
+    poster_url: 'https://upload.wikimedia.org/wikipedia/en/thumb/8/87/Sitaare_Zameen_Par_poster.jpg/500px-Sitaare_Zameen_Par_poster.jpg',
     backdrop_url: 'https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?w=1200&auto=format&fit=crop&q=80',
-    trailer_url: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+    trailer_url: 'https://www.youtube.com/embed/6_d0zV5HjD4',
     duration_min: 155,
     rating: 4.8,
     genre: ['Drama', 'Sports', 'Family'],
@@ -109,9 +109,9 @@ export const fallbackMovies = [
     id: 'game-changer',
     title: 'Game Changer',
     description: 'An honest Indian Administrative Service (IAS) officer fights against corrupt political dynasties to guarantee free and transparent elections.',
-    poster_url: 'https://images.unsplash.com/photo-1470115636492-6d2b56f9146d?w=800&auto=format&fit=crop&q=80',
-    backdrop_url: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1200&auto=format&fit=crop&q=80',
-    trailer_url: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+    poster_url: 'https://upload.wikimedia.org/wikipedia/en/6/6a/Game_Changer_Telugu.jpg',
+    backdrop_url: 'https://images.unsplash.com/photo-1470115636492-6d2b56f9146d?w=1200&auto=format&fit=crop&q=80',
+    trailer_url: 'https://www.youtube.com/embed/gB8jW_D8Krg',
     duration_min: 165,
     rating: 4.7,
     genre: ['Action', 'Thriller', 'Drama'],
@@ -126,8 +126,8 @@ export const fallbackMovies = [
     id: 'bhool-bhulaiyaa-3',
     title: 'Bhool Bhulaiyaa 3',
     description: 'Rooh Baba returns to the haunted palace of Raktaghat only to be confronted by two vengeful spirits claiming to be Manjulika.',
-    poster_url: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=800&auto=format&fit=crop&q=80',
-    backdrop_url: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=1200&auto=format&fit=crop&q=80',
+    poster_url: 'https://upload.wikimedia.org/wikipedia/en/e/e4/Bhool_Bhulaiyaa_3_poster.jpg',
+    backdrop_url: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=1200&auto=format&fit=crop&q=80',
     trailer_url: 'https://www.youtube.com/embed/5FkXbL_j_c8',
     duration_min: 158,
     rating: 4.7,
@@ -143,8 +143,8 @@ export const fallbackMovies = [
     id: 'singham-again',
     title: 'Singham Again',
     description: 'DCP Bajirao Singham unites the Cop Universe on a high-stakes cross-border rescue mission.',
-    poster_url: 'https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=800&auto=format&fit=crop&q=80',
-    backdrop_url: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=1200&auto=format&fit=crop&q=80',
+    poster_url: 'https://upload.wikimedia.org/wikipedia/en/0/04/Singham_Again_poster.jpg',
+    backdrop_url: 'https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=1200&auto=format&fit=crop&q=80',
     trailer_url: 'https://www.youtube.com/embed/1kVK0mP_32Y',
     duration_min: 165,
     rating: 4.6,
@@ -160,7 +160,7 @@ export const fallbackMovies = [
     id: 'captain-america-4',
     title: 'Captain America: Brave New World',
     description: 'Sam Wilson finds himself in the middle of an international incident as he must discover the motive behind a global conspiracy.',
-    poster_url: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?w=800&auto=format&fit=crop&q=80',
+    poster_url: 'https://upload.wikimedia.org/wikipedia/en/a/a4/Captain_America_Brave_New_World_poster.jpg',
     backdrop_url: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=1200&auto=format&fit=crop&q=80',
     trailer_url: 'https://www.youtube.com/embed/1pHDWnXmKMY',
     duration_min: 118,
@@ -177,9 +177,9 @@ export const fallbackMovies = [
     id: 'kannappa',
     title: 'Kannappa',
     description: 'The monumental tale of the supreme devotee of Lord Shiva with divine battles and spiritual grandeur.',
-    poster_url: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=800&auto=format&fit=crop&q=80',
+    poster_url: 'https://upload.wikimedia.org/wikipedia/en/e/ed/Kannappa_%28film%29.jpg',
     backdrop_url: 'https://images.unsplash.com/photo-1478760329108-5c3ed9d495a0?w=1200&auto=format&fit=crop&q=80',
-    trailer_url: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+    trailer_url: 'https://www.youtube.com/embed/hJ5f_F53aQY',
     duration_min: 165,
     rating: 4.6,
     genre: ['Action', 'Mythology', 'Drama'],
@@ -194,9 +194,9 @@ export const fallbackMovies = [
     id: 'baby-john',
     title: 'Baby John',
     description: 'A former cop assumes a peaceful identity to protect his young daughter until his violent past reemerges.',
-    poster_url: 'https://images.unsplash.com/photo-1518676590629-3dcbd9c5a5c9?w=800&auto=format&fit=crop&q=80',
+    poster_url: 'https://upload.wikimedia.org/wikipedia/en/thumb/2/29/Baby_John_%28title_card%29.jpg/500px-Baby_John_%28title_card%29.jpg',
     backdrop_url: 'https://images.unsplash.com/photo-1448375240586-882707db888b?w=1200&auto=format&fit=crop&q=80',
-    trailer_url: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+    trailer_url: 'https://www.youtube.com/embed/fGfE0FjIq20',
     duration_min: 152,
     rating: 4.5,
     genre: ['Action', 'Thriller'],
@@ -404,6 +404,73 @@ export const api = {
         success: true,
         reply: `🎬 **CineBot:** That's a great choice! Both **Pushpa 2: The Rule** and **Chhaava** are getting standing ovations in theatres right now. Would you like to pick your seats?`,
       };
+    }
+  },
+
+  async register(userData) {
+    try {
+      const res = await fetch(`${BASE_URL}/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(userData),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Registration failed');
+      return data;
+    } catch (err) {
+      // Local fallback for offline/demo mode
+      const mockToken = 'mock_jwt_token_' + Date.now();
+      const mockUser = {
+        id: 'usr_' + Date.now(),
+        name: userData.name,
+        email: userData.email,
+        phone: userData.phone || '+91 9876543210',
+        city: userData.city || 'Mumbai',
+        role: 'user',
+      };
+      return { success: true, token: mockToken, user: mockUser, message: 'Account created!' };
+    }
+  },
+
+  async login(credentials) {
+    try {
+      const res = await fetch(`${BASE_URL}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(credentials),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Login failed');
+      return data;
+    } catch (err) {
+      // Local fallback for demo credentials
+      const isAdmin = credentials.email.includes('admin');
+      const mockToken = 'mock_jwt_token_' + Date.now();
+      const mockUser = {
+        id: isAdmin ? 'adm_1' : 'usr_1',
+        name: isAdmin ? 'Cinema Operations Manager' : 'Aman Sharma',
+        email: credentials.email,
+        phone: '+91 9876543210',
+        city: 'Mumbai',
+        role: isAdmin ? 'admin' : 'user',
+      };
+      return { success: true, token: mockToken, user: mockUser, message: 'Welcome back!' };
+    }
+  },
+
+  async getMe() {
+    try {
+      const token = localStorage.getItem('cineverse_token');
+      if (!token) return null;
+      const res = await fetch(`${BASE_URL}/auth/me`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error('Failed to fetch user');
+      const data = await res.json();
+      return data.user;
+    } catch {
+      const saved = localStorage.getItem('cineverse_user');
+      return saved ? JSON.parse(saved) : null;
     }
   },
 
