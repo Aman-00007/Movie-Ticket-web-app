@@ -94,7 +94,9 @@ const initializeTables = async () => {
         created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
       );
+      ALTER TABLE movies ADD COLUMN IF NOT EXISTS backdrop_url TEXT;
       ALTER TABLE movies ADD COLUMN IF NOT EXISTS banner_url TEXT;
+      ALTER TABLE movies ADD COLUMN IF NOT EXISTS certification VARCHAR(10) DEFAULT 'UA';
       ALTER TABLE movies ADD COLUMN IF NOT EXISTS age_rating VARCHAR(10) DEFAULT 'U/A';
       ALTER TABLE movies ADD COLUMN IF NOT EXISTS votes INTEGER DEFAULT 1200;
     `);

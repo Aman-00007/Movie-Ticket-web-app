@@ -33,7 +33,7 @@
     "nodemailer": "^10.1.0",
     "pg": "^8.13.1",
     "pg-hstore": "^2.3.4",
-    "sequelize": "^3.30.0",
+    "sequelize": "^6.37.8",
     "stripe": "^17.4.0",
     "uuid": "^14.0.3"
   },

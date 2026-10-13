@@ -11,13 +11,15 @@ const Movie = sequelize.define('Movie', {
   duration_min: { type: DataTypes.INTEGER, allowNull: false },
   release_date: { type: DataTypes.DATEONLY, allowNull: false },
   poster_url: { type: DataTypes.TEXT, allowNull: false },
+  backdrop_url: { type: DataTypes.TEXT },
   banner_url: { type: DataTypes.TEXT },
   trailer_url: { type: DataTypes.TEXT },
   cast: { type: DataTypes.JSONB, defaultValue: [] },
   director: { type: DataTypes.STRING(200) },
-  age_rating: { type: DataTypes.ENUM('U', 'U/A', 'A'), defaultValue: 'U/A' },
-  status: { type: DataTypes.ENUM('now_showing', 'upcoming', 'ended'), defaultValue: 'upcoming' },
-  votes: { type: DataTypes.INTEGER, defaultValue: 0 },
+  certification: { type: DataTypes.STRING(10), defaultValue: 'UA' },
+  age_rating: { type: DataTypes.STRING(10), defaultValue: 'U/A' },
+  status: { type: DataTypes.ENUM('now_showing', 'upcoming', 'ended', 'archived'), defaultValue: 'upcoming' },
+  votes: { type: DataTypes.INTEGER, defaultValue: 1200 },
 }, {
   tableName: 'movies',
 });

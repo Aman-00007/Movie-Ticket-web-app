@@ -14,6 +14,16 @@ const User = sequelize.define('User', {
   is_active: { type: DataTypes.BOOLEAN, defaultValue: true },
 }, {
   tableName: 'users',
+  instanceMethods: {
+    comparePassword: async function (plain) {
+      return bcrypt.compare(plain, this.password);
+    },
+    toJSON: function () {
+      const vals = { ...this.get() };
+      delete vals.password;
+      return vals;
+    },
+  },
   hooks: {
     beforeCreate: async (user) => {
       if (user.password) user.password = await bcrypt.hash(user.password, 12);
@@ -24,14 +34,26 @@ const User = sequelize.define('User', {
   },
 });
 
-User.prototype.comparePassword = async function (plain) {
-  return bcrypt.compare(plain, this.password);
-};
+if (User.prototype) {
+  User.prototype.comparePassword = async function (plain) {
+    return bcrypt.compare(plain, this.password);
+  };
+  User.prototype.toJSON = function () {
+    const vals = { ...this.get() };
+    delete vals.password;
+    return vals;
+  };
+}
 
-User.prototype.toJSON = function () {
-  const vals = { ...this.get() };
-  delete vals.password;
-  return vals;
-};
+if (User.Instance && User.Instance.prototype) {
+  User.Instance.prototype.comparePassword = async function (plain) {
+    return bcrypt.compare(plain, this.password);
+  };
+  User.Instance.prototype.toJSON = function () {
+    const vals = { ...this.get() };
+    delete vals.password;
+    return vals;
+  };
+}
 
 module.exports = User;
