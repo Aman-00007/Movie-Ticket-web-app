@@ -145,17 +145,31 @@ exports.chat = async (req, res, next) => {
       .map((m) => `"${m.title}" (${(m.genre || []).join(', ')})`)
       .join(', ');
 
-    const model = genAI.getGenerativeModel({ model: 'gemini-3.1-flash-lite' });
-    const systemPrompt = `You are CineBot, CineVerse's friendly cinema AI assistant. Currently showing: ${movieContextStr}. Answer helpfully, suggest movies, explain bookings, and keep answers concise (max 90 words) with emojis.`;
+    const systemPrompt = `You are CineBot, CineVerse's friendly and knowledgeable cinema AI assistant. Currently in theatres at CineVerse: ${movieContextStr}. Answer helpfully, suggest movies from our collection, explain ticket booking or snacks, and keep responses engaging, concise (max 100 words), and fun with emojis.`;
 
-    const chat = model.startChat({
-      history: [
-        { role: 'user', parts: [{ text: systemPrompt }] },
-        { role: 'model', parts: [{ text: "🎬 Hey there! I'm CineBot, your movie expert. How can I help you today?" }] },
-        ...history.map((h) => ({ role: h.role, parts: [{ text: h.content }] })),
-      ],
+    const model = genAI.getGenerativeModel({
+      model: 'gemini-3.1-flash-lite',
+      systemInstruction: systemPrompt,
     });
 
+    // Sanitize history strictly for Gemini SDK ('user' and 'model' alternation)
+    const validHistory = [];
+    if (Array.isArray(history)) {
+      for (const h of history) {
+        if (!h.content || typeof h.content !== 'string') continue;
+        const role = (h.role === 'assistant' || h.role === 'model') ? 'model' : 'user';
+        if (validHistory.length === 0 && role !== 'user') continue;
+        if (validHistory.length > 0 && validHistory[validHistory.length - 1].role === role) continue;
+        validHistory.push({ role, parts: [{ text: h.content }] });
+      }
+    }
+
+    // Gemini SDK requires history to end with 'model' before chat.sendMessage adds the 'user' turn
+    while (validHistory.length > 0 && validHistory[validHistory.length - 1].role === 'user') {
+      validHistory.pop();
+    }
+
+    const chat = model.startChat({ history: validHistory });
     const result = await chat.sendMessage(message);
     const reply = result.response.text();
 
@@ -164,7 +178,7 @@ exports.chat = async (req, res, next) => {
     console.error('Gemini chat error:', err.message);
     res.json({
       success: true,
-      reply: "🍿 I'm here! Check out our Now Showing movies, or ask me for top action, comedy, or thriller picks!",
+      reply: "🍿 I'm here! Check out our Now Showing movies like Pushpa 2, Chhaava, and Gladiator II, or ask me for top action, comedy, or thriller picks!",
     });
   }
 };
