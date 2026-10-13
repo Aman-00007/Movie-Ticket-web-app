@@ -63,7 +63,7 @@ export const Footer = () => {
               <span>Frontend: React + Vite + Vanilla CSS</span>
               <span>Backend: Node.js Express MVC</span>
               <span>Database: PostgreSQL + Sequelize ORM</span>
-              <span>AI Engine: Google Gemini 1.5</span>
+              <span>AI Engine: Google Gemini 3.1 Flash</span>
             </div>
           </div>
         </div>

@@ -16,7 +16,7 @@ import {
   useAiController,
   useGameController,
 } from './controllers';
-import { HomeView, AuthModalView } from './views';
+import { HomeView, AuthModalView, MovieDetailPageView } from './views';
 
 export function App() {
   // 1. MVC Movie Controller
@@ -50,25 +50,44 @@ export function App() {
         onOpenGame={gameCtrl.openGameModal}
         onOpenSnacks={bookingCtrl.openSnacksModal}
         ticketCount={bookingCtrl.bookings.length}
+        onGoHome={movieCtrl.closeMovieDetail}
+        userLocation={bookingCtrl.userLocation}
+        locating={bookingCtrl.locating}
+        onDetectLocation={bookingCtrl.detectLocation}
       />
 
-      {/* Primary MVC Presentation View */}
-      <HomeView
-        movies={movieCtrl.movies}
-        filteredMovies={movieCtrl.filteredMovies}
-        loading={movieCtrl.loading}
-        filterTab={movieCtrl.filterTab}
-        onTabChange={movieCtrl.setFilterTab}
-        genres={movieCtrl.genres}
-        selectedGenre={movieCtrl.selectedGenre}
-        onGenreChange={movieCtrl.setSelectedGenre}
-        searchQuery={movieCtrl.searchQuery}
-        onBookMovie={bookingCtrl.openBooking}
-        onWatchTrailer={movieCtrl.openTrailer}
-        onOpenAi={aiCtrl.openAiModal}
-        onOpenGame={gameCtrl.openGameModal}
-        onOpenSnacks={bookingCtrl.openSnacksModal}
-      />
+      {/* Primary MVC Presentation View: Either Dedicated Movie Landing Page or Dashboard */}
+      {movieCtrl.selectedMovieDetail ? (
+        <MovieDetailPageView
+          movie={movieCtrl.selectedMovieDetail}
+          theatres={bookingCtrl.theatres}
+          selectedCity={movieCtrl.selectedCity}
+          onBack={movieCtrl.closeMovieDetail}
+          onBookMovie={(movie, options) => bookingCtrl.openBooking(movie, options)}
+          onWatchTrailer={movieCtrl.openTrailer}
+          userLocation={bookingCtrl.userLocation}
+          locating={bookingCtrl.locating}
+          onDetectLocation={bookingCtrl.detectLocation}
+        />
+      ) : (
+        <HomeView
+          movies={movieCtrl.movies}
+          filteredMovies={movieCtrl.filteredMovies}
+          loading={movieCtrl.loading}
+          filterTab={movieCtrl.filterTab}
+          onTabChange={movieCtrl.setFilterTab}
+          genres={movieCtrl.genres}
+          selectedGenre={movieCtrl.selectedGenre}
+          onGenreChange={movieCtrl.setSelectedGenre}
+          searchQuery={movieCtrl.searchQuery}
+          onBookMovie={bookingCtrl.openBooking}
+          onWatchTrailer={movieCtrl.openTrailer}
+          onSelectMovie={movieCtrl.openMovieDetail}
+          onOpenAi={aiCtrl.openAiModal}
+          onOpenGame={gameCtrl.openGameModal}
+          onOpenSnacks={bookingCtrl.openSnacksModal}
+        />
+      )}
 
       {/* Footer */}
       <Footer />
@@ -80,6 +99,7 @@ export function App() {
         <BookingModal
           movie={bookingCtrl.bookingMovie}
           theatres={bookingCtrl.theatres}
+          initialOptions={bookingCtrl.initialBookingOptions}
           beverages={bookingCtrl.beverages}
           user={authCtrl.user}
           onClose={bookingCtrl.closeBooking}

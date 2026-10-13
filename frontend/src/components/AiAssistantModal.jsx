@@ -61,16 +61,25 @@ export const AiAssistantModal = ({ onClose, onBookMovie, movies }) => {
 
     const userText = inputMsg.trim();
     setInputMsg('');
-    const newHistory = [...messages, { role: 'user', content: userText }];
-    setMessages(newHistory);
+    const prevHistory = messages;
+    setMessages([...prevHistory, { role: 'user', content: userText }]);
     setLoadingChat(true);
 
     try {
-      const res = await api.chatWithAi(userText, newHistory);
-      setMessages([...newHistory, { role: 'assistant', content: res.reply }]);
+      const res = await api.chatWithAi(userText, prevHistory);
+      if (res && res.reply) {
+        setMessages([
+          ...prevHistory,
+          { role: 'user', content: userText },
+          { role: 'assistant', content: res.reply },
+        ]);
+      } else {
+        throw new Error('Empty response');
+      }
     } catch {
       setMessages([
-        ...newHistory,
+        ...prevHistory,
+        { role: 'user', content: userText },
         {
           role: 'assistant',
           content: "🎬 I'm having a brief intermission! Feel free to ask me about showtimes, popcorn combos, or top trending movies!",
@@ -106,7 +115,7 @@ export const AiAssistantModal = ({ onClose, onBookMovie, movies }) => {
             <div>
               <h2 style={{ fontSize: '1.4rem', fontWeight: 800 }}>CineBot AI Concierge</h2>
               <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                Powered by Google Gemini 1.5 & CineVerse Intelligence
+                Powered by Google Gemini 3.1 Flash & CineVerse Intelligence
               </p>
             </div>
           </div>
