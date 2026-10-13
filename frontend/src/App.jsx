@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
 import { BookingModal } from './components/BookingModal';
@@ -17,7 +17,7 @@ import {
   useAiController,
   useGameController,
 } from './controllers';
-import { HomeView, AuthModalView, MovieDetailPageView } from './views';
+import { HomeView, AuthModalView, MovieDetailPageView, MyBookingsPageView } from './views';
 import { getMovieBookingAvailability } from './models';
 
 export function App() {
@@ -35,6 +35,9 @@ export function App() {
 
   // 5. MVC Arcade Game Controller
   const gameCtrl = useGameController();
+
+  // Navigation State for Dedicated "My Bookings" Page View
+  const [myBookingsPageOpen, setMyBookingsPageOpen] = useState(false);
 
   // Admin check for privileged actions
   const isAdmin = Boolean(authCtrl.user && (authCtrl.user.role === 'admin' || authCtrl.user.role === 'ADMIN'));
@@ -55,29 +58,50 @@ export function App() {
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      {/* Navigation Bar */}
+      {/* Navigation Bar with Dynamic Autocomplete Search & My Bookings */}
       <Navbar
         selectedCity={movieCtrl.selectedCity}
         onSelectCity={movieCtrl.setSelectedCity}
         searchQuery={movieCtrl.searchQuery}
         onSearchChange={movieCtrl.setSearchQuery}
+        movies={movieCtrl.movies}
+        onSelectMovie={(movie) => {
+          setMyBookingsPageOpen(false);
+          movieCtrl.openMovieDetail(movie);
+        }}
         user={authCtrl.user}
         onOpenAuth={authCtrl.openAuthModal}
         onLogout={authCtrl.logout}
         onOpenTickets={bookingCtrl.openTicketsModal}
+        onOpenMyBookingsPage={() => {
+          movieCtrl.closeMovieDetail();
+          setMyBookingsPageOpen(true);
+        }}
         onOpenAi={aiCtrl.openAiModal}
         onOpenGame={gameCtrl.openGameModal}
         onOpenSnacks={bookingCtrl.openSnacksModal}
         onOpenMovieManager={movieCtrl.openMovieManager}
         ticketCount={bookingCtrl.bookings.length}
-        onGoHome={movieCtrl.closeMovieDetail}
+        onGoHome={() => {
+          setMyBookingsPageOpen(false);
+          movieCtrl.closeMovieDetail();
+        }}
         userLocation={bookingCtrl.userLocation}
         locating={bookingCtrl.locating}
         onDetectLocation={bookingCtrl.detectLocation}
       />
 
-      {/* Primary MVC Presentation View: Either Dedicated Movie Landing Page or Dashboard */}
-      {movieCtrl.selectedMovieDetail ? (
+      {/* Primary MVC Presentation View: Dedicated My Bookings Page, Movie Landing Page, or Home Dashboard */}
+      {myBookingsPageOpen ? (
+        <MyBookingsPageView
+          bookings={bookingCtrl.bookings}
+          user={authCtrl.user}
+          onBackToHome={() => setMyBookingsPageOpen(false)}
+          onCancelBooking={bookingCtrl.cancelBooking}
+          onSimulateTestBooking={bookingCtrl.simulateTestBooking}
+          onOpenAuth={authCtrl.openAuthModal}
+        />
+      ) : movieCtrl.selectedMovieDetail ? (
         <MovieDetailPageView
           movie={movieCtrl.selectedMovieDetail}
           theatres={bookingCtrl.theatres}
@@ -188,6 +212,12 @@ export function App() {
         <TicketsModal
           bookings={bookingCtrl.bookings}
           onClose={bookingCtrl.closeTicketsModal}
+          onViewFullPage={() => {
+            bookingCtrl.closeTicketsModal();
+            movieCtrl.closeMovieDetail();
+            setMyBookingsPageOpen(true);
+          }}
+          onCancelBooking={bookingCtrl.cancelBooking}
         />
       )}
 

@@ -50,14 +50,19 @@ export class MovieModel {
   }
 
   matchesSearch(term = '') {
-    if (!term.trim()) return true;
+    if (!term || !term.trim()) return true;
     const q = term.toLowerCase().trim();
-    return (
-      this.title.toLowerCase().includes(q) ||
-      this.genre.some((g) => g.toLowerCase().includes(q)) ||
-      this.language.some((l) => l.toLowerCase().includes(q)) ||
-      (this.director && this.director.toLowerCase().includes(q))
-    );
+    const titleMatch = this.title && this.title.toLowerCase().includes(q);
+    const genreMatch = Array.isArray(this.genre) && this.genre.some((g) => g.toLowerCase().includes(q));
+    const langMatch = Array.isArray(this.language) && this.language.some((l) => l.toLowerCase().includes(q));
+    const directorMatch = this.director && this.director.toLowerCase().includes(q);
+    const castMatch = Array.isArray(this.cast) && this.cast.some((c) => {
+      if (!c) return false;
+      const str = typeof c === 'object' ? `${c.name || ''} ${c.role || ''}` : String(c);
+      return str.toLowerCase().includes(q);
+    });
+    const descMatch = this.description && this.description.toLowerCase().includes(q);
+    return titleMatch || genreMatch || langMatch || directorMatch || castMatch || descMatch;
   }
 
   matchesGenre(selectedGenre = 'All') {

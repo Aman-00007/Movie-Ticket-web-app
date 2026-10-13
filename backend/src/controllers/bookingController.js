@@ -196,16 +196,44 @@ exports.getBookingById = async (req, res, next) => {
 
 exports.cancelBooking = async (req, res, next) => {
   try {
-    const booking = await Booking.findOne({ where: { id: req.params.id, user_id: req.user.id } });
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(req.params.id);
+    const whereClause = { user_id: req.user.id };
+    if (isUuid) {
+      whereClause.id = req.params.id;
+    } else {
+      whereClause.booking_code = req.params.id;
+    }
+
+    const booking = await Booking.findOne({ where: whereClause });
     if (!booking) return res.status(404).json({ success: false, message: 'Booking not found' });
-    if (booking.status === 'cancelled') return res.status(400).json({ success: false, message: 'Already cancelled' });
+    if (booking.status === 'cancelled') return res.status(400).json({ success: false, message: 'Ticket is already cancelled' });
+
+    // Cancellation policy: Allowed within 4 days of booking creation
+    const bookingTime = new Date(booking.createdAt).getTime();
+    const nowTime = Date.now();
+    const diffDays = (nowTime - bookingTime) / (1000 * 60 * 60 * 24);
+
+    if (diffDays > 4) {
+      return res.status(400).json({
+        success: false,
+        message: 'Cancellation period expired. Tickets can only be cancelled within 4 days of booking.',
+      });
+    }
 
     // Release seats
-    const seatIds = booking.seats.map((s) => s.id);
-    await Seat.update({ status: 'available', held_by: null, held_until: null }, { where: { id: { [Op.in]: seatIds } } });
+    if (Array.isArray(booking.seats)) {
+      const seatIds = booking.seats.map((s) => (typeof s === 'object' && s ? s.id : s)).filter(Boolean);
+      if (seatIds.length > 0) {
+        await Seat.update({ status: 'available', held_by: null, held_until: null }, { where: { id: { [Op.in]: seatIds } } });
+      }
+    }
 
     await booking.update({ status: 'cancelled', payment_status: 'refunded' });
-    res.json({ success: true, message: 'Booking cancelled successfully', booking });
+    res.json({
+      success: true,
+      message: `🎉 Booking cancelled successfully. ₹${booking.total_amount} refund initiated to original payment method.`,
+      booking,
+    });
   } catch (err) {
     next(err);
   }

@@ -726,6 +726,36 @@ export const api = {
       };
     }
   },
+
+  async getMyBookings() {
+    try {
+      const token = localStorage.getItem('cineverse_token');
+      if (!token) return [];
+      const res = await fetch(`${BASE_URL}/bookings/my`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error('Failed to load bookings');
+      const data = await res.json();
+      return data.data || [];
+    } catch {
+      return [];
+    }
+  },
+
+  async cancelBooking(bookingId) {
+    const token = localStorage.getItem('cineverse_token');
+    if (!token) throw new Error('Authentication required');
+    const res = await fetch(`${BASE_URL}/bookings/${bookingId}/cancel`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || 'Failed to cancel booking');
+    return data;
+  },
 };
 
 // ─── Configurable QR Code Generator API for Fake / Demo UPI Payments ───

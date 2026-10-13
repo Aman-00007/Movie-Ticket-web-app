@@ -8,5 +8,6 @@ router.post('/', createBooking);
 router.get('/my', getMyBookings);
 router.get('/:id', getBookingById);
 router.delete('/:id', cancelBooking);
+router.post('/:id/cancel', cancelBooking);
 
 module.exports = router;

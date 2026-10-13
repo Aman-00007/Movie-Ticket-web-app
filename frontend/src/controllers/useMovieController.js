@@ -40,10 +40,14 @@ export function useMovieController(initialCity = 'Mumbai') {
 
   // Filter movies according to MVC model logic
   const filteredMovies = useMemo(() => {
+    const hasSearch = Boolean(searchQuery && searchQuery.trim());
     return movies.filter((movie) => {
-      // 1. Filter by status (now_showing vs upcoming)
-      const matchesStatus =
-        filterTab === 'now_showing' ? movie.isNowShowing() : movie.isUpcoming();
+      // 1. Filter by status (now_showing vs upcoming) - if actively searching, search all movies
+      const matchesStatus = hasSearch
+        ? true
+        : filterTab === 'now_showing'
+          ? movie.isNowShowing()
+          : movie.isUpcoming();
 
       // 2. Filter by genre
       const matchesGenre = movie.matchesGenre(selectedGenre);

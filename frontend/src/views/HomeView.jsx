@@ -43,38 +43,155 @@ export const HomeView = ({
         'War 2',
       ].includes(m.title) || m.status === 'now_showing'
   );
+  const isSearching = Boolean(searchQuery && searchQuery.trim().length > 0);
 
   return (
     <main className="container" style={{ paddingTop: 24, paddingBottom: 64 }}>
-      {/* ─── 1. Top Hero Carousel Banner with Fitted Poster in Layout ─── */}
-      <HeroBanner
-        movies={movies}
-        user={user}
-        onBookMovie={onBookMovie}
-        onWatchTrailer={onWatchTrailer}
-        onSelectMovie={onSelectMovie}
-        onDeleteMovie={isAdmin ? onDeleteMovie : null}
-      />
+      {/* If user is actively searching, show search results right away at the top */}
+      {isSearching ? (
+        <section style={{ marginBottom: 40, animation: 'fadeIn 0.2s ease' }}>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              borderBottom: '1px solid var(--border-subtle)',
+              paddingBottom: 16,
+              marginBottom: 20,
+              flexWrap: 'wrap',
+              gap: 12,
+            }}
+          >
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <span style={{ fontSize: '1.4rem' }}>🔍</span>
+                <h2 style={{ fontSize: '1.6rem', fontWeight: 900, color: 'white', letterSpacing: '-0.5px' }}>
+                  Search Results for &quot;{searchQuery}&quot;
+                </h2>
+              </div>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginTop: 4 }}>
+                Showing <strong>{filteredMovies.length}</strong> 2026 theatrical movies matching title, actors, genres, or keywords
+              </p>
+            </div>
 
-      {/* ─── 2. Top "Recommended Movies" Side-Scrolling Carousel (Screenshots 1 & 3) ─── */}
-      <RecommendedMoviesRow
-        title="Recommended Movies"
-        subtitle="Trending theatrical releases in cinemas right now"
-        movies={recommendedMovies.length > 0 ? recommendedMovies : movies}
-        onBookMovie={onBookMovie}
-        onWatchTrailer={onWatchTrailer}
-        onSelectMovie={onSelectMovie}
-        onDeleteMovie={isAdmin ? onDeleteMovie : null}
-      />
+            <button
+              onClick={() => onGenreChange('All')}
+              className="btn btn-secondary"
+              style={{ fontSize: '0.85rem', padding: '6px 14px' }}
+            >
+              Reset Filters
+            </button>
+          </div>
 
-      {/* ─── 3. Premieres Section (Screenshot 2 Match) ─── */}
-      <PremieresSection
-        movies={movies}
-        onBookMovie={onBookMovie}
-        onWatchTrailer={onWatchTrailer}
-        onSelectMovie={onSelectMovie}
-        onDeleteMovie={isAdmin ? onDeleteMovie : null}
-      />
+          {/* Genre Filters while searching */}
+          <div
+            style={{
+              display: 'flex',
+              gap: 8,
+              overflowX: 'auto',
+              paddingBottom: 16,
+              marginBottom: 20,
+            }}
+          >
+            {genres.map((g) => (
+              <button
+                key={g}
+                onClick={() => onGenreChange(g)}
+                style={{
+                  padding: '6px 14px',
+                  borderRadius: 20,
+                  border: '1px solid',
+                  borderColor: selectedGenre === g ? 'var(--accent-red)' : 'var(--border-subtle)',
+                  backgroundColor: selectedGenre === g ? 'var(--accent-red)' : 'var(--bg-card)',
+                  color: selectedGenre === g ? 'white' : 'var(--text-secondary)',
+                  fontSize: '0.8rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {g}
+              </button>
+            ))}
+          </div>
+
+          {filteredMovies.length === 0 ? (
+            <div
+              style={{
+                textAlign: 'center',
+                padding: '60px 20px',
+                backgroundColor: 'var(--bg-card)',
+                borderRadius: 'var(--radius-lg)',
+                border: '1px solid var(--border-subtle)',
+              }}
+            >
+              <div style={{ fontSize: '3rem', marginBottom: 12 }}>🔍</div>
+              <h3 style={{ fontSize: '1.2rem', marginBottom: 6 }}>No Movies Found for &quot;{searchQuery}&quot;</h3>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', maxWidth: 460, margin: '0 auto 16px' }}>
+                We couldn&apos;t find titles matching this keyword. Try searching for actors (e.g. Tom Holland, Hrithik Roshan), genres (e.g. Action, Sci-Fi), or clear your search.
+              </p>
+              {isAdmin && (
+                <button onClick={onOpenMovieManager} className="btn btn-primary" style={{ padding: '8px 20px' }}>
+                  🛡️ Search Web & Add Movie with Gemini Flash
+                </button>
+              )}
+            </div>
+          ) : (
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
+                gap: 24,
+              }}
+            >
+              {filteredMovies.map((movie) => (
+                <MovieCard
+                  key={movie.id}
+                  movie={movie}
+                  onBook={onBookMovie}
+                  onWatchTrailer={onWatchTrailer}
+                  onSelect={onSelectMovie}
+                  onDelete={isAdmin ? onDeleteMovie : null}
+                />
+              ))}
+            </div>
+          )}
+        </section>
+      ) : (
+        <>
+          {/* ─── 1. Top Hero Carousel Banner with Fitted Poster in Layout ─── */}
+          <HeroBanner
+            movies={movies}
+            user={user}
+            onBookMovie={onBookMovie}
+            onWatchTrailer={onWatchTrailer}
+            onSelectMovie={onSelectMovie}
+            onDeleteMovie={isAdmin ? onDeleteMovie : null}
+          />
+
+          {/* ─── 2. Top "Recommended Movies" Side-Scrolling Carousel (Screenshots 1 & 3) ─── */}
+          <RecommendedMoviesRow
+            title="Recommended Movies"
+            subtitle="Trending theatrical releases in cinemas right now"
+            movies={recommendedMovies.length > 0 ? recommendedMovies : movies}
+            onBookMovie={onBookMovie}
+            onWatchTrailer={onWatchTrailer}
+            onSelectMovie={onSelectMovie}
+            onDeleteMovie={isAdmin ? onDeleteMovie : null}
+          />
+        </>
+      )}
+
+      {!isSearching && (
+        <>
+          {/* ─── 3. Premieres Section (Screenshot 2 Match) ─── */}
+          <PremieresSection
+            movies={movies}
+            onBookMovie={onBookMovie}
+            onWatchTrailer={onWatchTrailer}
+            onSelectMovie={onSelectMovie}
+            onDeleteMovie={isAdmin ? onDeleteMovie : null}
+          />
 
       {/* ─── 4. Quick Features Banner: AI Cinema Bot, Movie Manager with Gemini Flash, Arcade, Snacks ─── */}
       <section
@@ -449,6 +566,8 @@ export const HomeView = ({
             />
           ))}
         </div>
+      )}
+        </>
       )}
     </main>
   );
