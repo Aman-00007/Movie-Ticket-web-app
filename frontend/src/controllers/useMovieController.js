@@ -57,6 +57,17 @@ export function useMovieController(initialCity = 'Mumbai') {
     });
   }, [movies, filterTab, selectedGenre, searchQuery]);
 
+  const [selectedMovieDetail, setSelectedMovieDetail] = useState(null);
+
+  const openMovieDetail = (movie) => {
+    setSelectedMovieDetail(movie);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const closeMovieDetail = () => {
+    setSelectedMovieDetail(null);
+  };
+
   const openTrailer = (movie) => setActiveTrailerMovie(movie);
   const closeTrailer = () => setActiveTrailerMovie(null);
 
@@ -76,5 +87,8 @@ export function useMovieController(initialCity = 'Mumbai') {
     activeTrailerMovie,
     openTrailer,
     closeTrailer,
+    selectedMovieDetail,
+    openMovieDetail,
+    closeMovieDetail,
   };
 }

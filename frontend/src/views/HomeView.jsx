@@ -15,6 +15,7 @@ export const HomeView = ({
   searchQuery,
   onBookMovie,
   onWatchTrailer,
+  onSelectMovie,
   onOpenAi,
   onOpenGame,
   onOpenSnacks,
@@ -26,6 +27,7 @@ export const HomeView = ({
         movies={movies}
         onBookMovie={onBookMovie}
         onWatchTrailer={onWatchTrailer}
+        onSelectMovie={onSelectMovie}
       />
 
       {/* Interactive Quick Features Banner */}
@@ -305,6 +307,7 @@ export const HomeView = ({
               movie={movie}
               onBook={onBookMovie}
               onWatchTrailer={onWatchTrailer}
+              onSelectMovie={onSelectMovie}
             />
           ))}
         </div>

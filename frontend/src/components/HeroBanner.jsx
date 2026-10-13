@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { StarIcon, PlayIcon, TicketIcon } from './Icons';
 
-export const HeroBanner = ({ movies, onBookMovie, onWatchTrailer }) => {
+export const HeroBanner = ({ movies, onBookMovie, onWatchTrailer, onSelectMovie }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const featured = movies.slice(0, 4);
@@ -122,20 +122,23 @@ export const HeroBanner = ({ movies, onBookMovie, onWatchTrailer }) => {
           {current.description}
         </p>
 
-        <div style={{ display: 'flex', gap: 16 }}>
+        <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
           <button
-            onClick={() => onBookMovie(current)}
+            onClick={() => {
+              if (onSelectMovie) onSelectMovie(current);
+              else onBookMovie(current);
+            }}
             className="btn btn-primary"
-            style={{ padding: '12px 28px', fontSize: '1rem' }}
+            style={{ padding: '12px 28px', fontSize: '1rem', fontWeight: 700 }}
           >
             <TicketIcon size={20} />
-            Book Tickets Now
+            Book Tickets & Details
           </button>
 
           <button
             onClick={() => onWatchTrailer(current)}
             className="btn btn-secondary"
-            style={{ padding: '12px 24px', fontSize: '1rem' }}
+            style={{ padding: '12px 24px', fontSize: '1rem', fontWeight: 600 }}
           >
             <PlayIcon size={18} />
             Watch Trailer

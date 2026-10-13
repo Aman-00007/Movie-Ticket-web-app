@@ -1,7 +1,12 @@
 import React from 'react';
 import { StarIcon, PlayIcon, TicketIcon } from './Icons';
 
-export const MovieCard = ({ movie, onBook, onWatchTrailer }) => {
+export const MovieCard = ({ movie, onBook, onWatchTrailer, onSelectMovie }) => {
+  const handleCardClick = () => {
+    if (onSelectMovie) onSelectMovie(movie);
+    else onBook(movie);
+  };
+
   return (
     <div
       style={{
@@ -13,6 +18,7 @@ export const MovieCard = ({ movie, onBook, onWatchTrailer }) => {
         display: 'flex',
         flexDirection: 'column',
         position: 'relative',
+        cursor: 'pointer',
       }}
       onMouseEnter={(e) => {
         e.currentTarget.style.transform = 'translateY(-6px)';
@@ -26,7 +32,10 @@ export const MovieCard = ({ movie, onBook, onWatchTrailer }) => {
       }}
     >
       {/* Poster Image Container */}
-      <div style={{ position: 'relative', width: '100%', paddingTop: '145%', overflow: 'hidden' }}>
+      <div
+        onClick={handleCardClick}
+        style={{ position: 'relative', width: '100%', paddingTop: '145%', overflow: 'hidden' }}
+      >
         <img
           src={movie.poster_url}
           alt={movie.title}
@@ -85,7 +94,10 @@ export const MovieCard = ({ movie, onBook, onWatchTrailer }) => {
 
         {/* Quick trailer hover overlay */}
         <button
-          onClick={() => onWatchTrailer(movie)}
+          onClick={(e) => {
+            e.stopPropagation();
+            onWatchTrailer(movie);
+          }}
           style={{
             position: 'absolute',
             bottom: 10,
@@ -111,14 +123,18 @@ export const MovieCard = ({ movie, onBook, onWatchTrailer }) => {
 
       {/* Details */}
       <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', flex: 1 }}>
-        <h3 style={{
-          fontSize: '1.1rem',
-          fontWeight: 700,
-          marginBottom: 6,
-          whiteSpace: 'nowrap',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-        }}>
+        <h3
+          onClick={handleCardClick}
+          style={{
+            fontSize: '1.1rem',
+            fontWeight: 700,
+            marginBottom: 6,
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            cursor: 'pointer',
+          }}
+        >
           {movie.title}
         </h3>
 
@@ -135,14 +151,24 @@ export const MovieCard = ({ movie, onBook, onWatchTrailer }) => {
           <span>{(movie.language || []).join(', ')}</span>
         </div>
 
-        <div style={{ marginTop: 'auto', paddingTop: 8 }}>
+        <div style={{ marginTop: 'auto', paddingTop: 8, display: 'flex', gap: 8 }}>
           <button
-            onClick={() => onBook(movie)}
-            className="btn btn-primary"
-            style={{ width: '100%', padding: '10px 0', fontSize: '0.9rem' }}
+            onClick={() => handleCardClick()}
+            className="btn btn-secondary"
+            style={{ flex: 1, padding: '9px 0', fontSize: '0.85rem' }}
           >
-            <TicketIcon size={16} />
-            Book Tickets
+            Details
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onBook(movie);
+            }}
+            className="btn btn-primary"
+            style={{ flex: 1.2, padding: '9px 0', fontSize: '0.85rem' }}
+          >
+            <TicketIcon size={15} />
+            Book
           </button>
         </div>
       </div>
