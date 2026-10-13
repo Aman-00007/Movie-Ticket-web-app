@@ -178,7 +178,7 @@ exports.chat = async (req, res, next) => {
     console.error('Gemini chat error:', err.message);
     res.json({
       success: true,
-      reply: "🍿 I'm here! Check out our Now Showing movies like Pushpa 2, Chhaava, and Gladiator II, or ask me for top action, comedy, or thriller picks!",
+      reply: "🍿 I'm here! Check out our 2026 Now Showing movies like Drishyam The Conclusion, War 2, Hanuman Ansh, and Spider-Man: Brand New Day, or ask me for top action, comedy, or thriller picks!",
     });
   }
 };

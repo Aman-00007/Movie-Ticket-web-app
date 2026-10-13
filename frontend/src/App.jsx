@@ -7,6 +7,7 @@ import { MiniGameModal } from './components/MiniGameModal';
 import { SnacksModal } from './components/SnacksModal';
 import { TicketsModal } from './components/TicketsModal';
 import { TrailerModal } from './components/TrailerModal';
+import { MovieManagerModal } from './components/MovieManagerModal';
 
 // MVC Architectural Layer
 import {
@@ -49,6 +50,7 @@ export function App() {
         onOpenAi={aiCtrl.openAiModal}
         onOpenGame={gameCtrl.openGameModal}
         onOpenSnacks={bookingCtrl.openSnacksModal}
+        onOpenMovieManager={movieCtrl.openMovieManager}
         ticketCount={bookingCtrl.bookings.length}
         onGoHome={movieCtrl.closeMovieDetail}
         userLocation={bookingCtrl.userLocation}
@@ -83,9 +85,11 @@ export function App() {
           onBookMovie={bookingCtrl.openBooking}
           onWatchTrailer={movieCtrl.openTrailer}
           onSelectMovie={movieCtrl.openMovieDetail}
+          onDeleteMovie={movieCtrl.deleteMovie}
           onOpenAi={aiCtrl.openAiModal}
           onOpenGame={gameCtrl.openGameModal}
           onOpenSnacks={bookingCtrl.openSnacksModal}
+          onOpenMovieManager={movieCtrl.openMovieManager}
         />
       )}
 
@@ -93,6 +97,18 @@ export function App() {
       <Footer />
 
       {/* Modals & Sub-Views */}
+
+      {/* 2026 Movie Database Manager (Gemini Flash Web Search & Add / Delete) */}
+      {movieCtrl.movieManagerOpen && (
+        <MovieManagerModal
+          movies={movieCtrl.movies}
+          onClose={movieCtrl.closeMovieManager}
+          onAddMovie={movieCtrl.addMovie}
+          onDeleteMovie={movieCtrl.deleteMovie}
+          onAiSearchMovie={movieCtrl.aiSearchAndAddMovie}
+          onSync2026={movieCtrl.sync2026}
+        />
+      )}
 
       {/* Cinema Seat Booking View */}
       {bookingCtrl.bookingMovie && (
@@ -170,4 +186,3 @@ export function App() {
 }
 
 export default App;
-

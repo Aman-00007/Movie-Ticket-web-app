@@ -1,7 +1,7 @@
 import React from 'react';
 import { StarIcon, PlayIcon, TicketIcon } from './Icons';
 
-export const MovieCard = ({ movie, onBook, onWatchTrailer, onSelectMovie }) => {
+export const MovieCard = ({ movie, onBook, onWatchTrailer, onSelectMovie, onDelete }) => {
   const handleCardClick = () => {
     if (onSelectMovie) onSelectMovie(movie);
     else onBook(movie);
@@ -79,7 +79,7 @@ export const MovieCard = ({ movie, onBook, onWatchTrailer, onSelectMovie }) => {
         <div style={{
           position: 'absolute',
           top: 10,
-          right: 10,
+          right: onDelete ? 42 : 10,
           backgroundColor: 'rgba(11, 13, 20, 0.85)',
           backdropFilter: 'blur(8px)',
           padding: '2px 8px',
@@ -91,6 +91,47 @@ export const MovieCard = ({ movie, onBook, onWatchTrailer, onSelectMovie }) => {
         }}>
           {movie.certification || 'UA'}
         </div>
+
+        {/* Quick Delete Trash Button */}
+        {onDelete && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              if (window.confirm(`Delete "${movie.title}" from CineVerse database?`)) {
+                onDelete(movie.id);
+              }
+            }}
+            title="Delete movie from database"
+            style={{
+              position: 'absolute',
+              top: 10,
+              right: 10,
+              width: 26,
+              height: 26,
+              borderRadius: '50%',
+              backgroundColor: 'rgba(0, 0, 0, 0.75)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              color: '#ef4444',
+              fontSize: '0.75rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              zIndex: 10,
+              transition: 'all 0.2s',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = '#ef4444';
+              e.currentTarget.style.color = '#fff';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.75)';
+              e.currentTarget.style.color = '#ef4444';
+            }}
+          >
+            🗑️
+          </button>
+        )}
 
         {/* Quick trailer hover overlay */}
         <button

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { api, fallbackMovies } from '../services/api';
 import { MovieModel } from '../models/MovieModel';
 
@@ -10,35 +10,33 @@ export function useMovieController(initialCity = 'Mumbai') {
   const [filterTab, setFilterTab] = useState('now_showing'); // 'now_showing' | 'upcoming'
   const [selectedGenre, setSelectedGenre] = useState('All');
   const [activeTrailerMovie, setActiveTrailerMovie] = useState(null);
+  const [selectedMovieDetail, setSelectedMovieDetail] = useState(null);
+  const [movieManagerOpen, setMovieManagerOpen] = useState(false);
 
   // Available genres
   const genres = useMemo(
-    () => ['All', 'Action', 'Drama', 'Comedy', 'Sci-Fi', 'Sports', 'Family', 'Mythology'],
+    () => ['All', 'Action', 'Drama', 'Comedy', 'Thriller', 'Horror', 'Sci-Fi', 'Animation', 'Adventure', 'Mythology', 'Biography'],
     []
   );
 
   // Fetch movies from backend or fallback
-  useEffect(() => {
-    let mounted = true;
-    const fetchMovies = async () => {
-      setLoading(true);
-      try {
-        const rawMovies = await api.getMovies();
-        if (mounted && rawMovies && rawMovies.length) {
-          setMovies(MovieModel.fromArray(rawMovies));
-        }
-      } catch (err) {
-        console.warn('MovieController: using fallback movies', err);
-      } finally {
-        if (mounted) setLoading(false);
+  const refreshMovies = useCallback(async () => {
+    setLoading(true);
+    try {
+      const rawMovies = await api.getMovies();
+      if (rawMovies && rawMovies.length) {
+        setMovies(MovieModel.fromArray(rawMovies));
       }
-    };
-
-    fetchMovies();
-    return () => {
-      mounted = false;
-    };
+    } catch (err) {
+      console.warn('MovieController: using fallback movies', err);
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    refreshMovies();
+  }, [refreshMovies]);
 
   // Filter movies according to MVC model logic
   const filteredMovies = useMemo(() => {
@@ -57,8 +55,6 @@ export function useMovieController(initialCity = 'Mumbai') {
     });
   }, [movies, filterTab, selectedGenre, searchQuery]);
 
-  const [selectedMovieDetail, setSelectedMovieDetail] = useState(null);
-
   const openMovieDetail = (movie) => {
     setSelectedMovieDetail(movie);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -70,6 +66,42 @@ export function useMovieController(initialCity = 'Mumbai') {
 
   const openTrailer = (movie) => setActiveTrailerMovie(movie);
   const closeTrailer = () => setActiveTrailerMovie(null);
+
+  const openMovieManager = () => setMovieManagerOpen(true);
+  const closeMovieManager = () => setMovieManagerOpen(false);
+
+  // Add new movie
+  const addMovie = async (movieData) => {
+    const res = await api.createMovie(movieData);
+    await refreshMovies();
+    return res;
+  };
+
+  // Delete movie from database
+  const deleteMovie = async (movieId) => {
+    const res = await api.deleteMovie(movieId);
+    // Optimistically remove from state
+    setMovies((prev) => prev.filter((m) => m.id !== movieId));
+    if (selectedMovieDetail && selectedMovieDetail.id === movieId) {
+      setSelectedMovieDetail(null);
+    }
+    await refreshMovies();
+    return res;
+  };
+
+  // AI Search & Add using Gemini Flash
+  const aiSearchAndAddMovie = async (query) => {
+    const res = await api.aiSearchMovie(query);
+    await refreshMovies();
+    return res;
+  };
+
+  // Sync 2026 database movies
+  const sync2026 = async () => {
+    const res = await api.sync2026Movies();
+    await refreshMovies();
+    return res;
+  };
 
   return {
     movies,
@@ -90,5 +122,13 @@ export function useMovieController(initialCity = 'Mumbai') {
     selectedMovieDetail,
     openMovieDetail,
     closeMovieDetail,
+    movieManagerOpen,
+    openMovieManager,
+    closeMovieManager,
+    addMovie,
+    deleteMovie,
+    aiSearchAndAddMovie,
+    sync2026,
+    refreshMovies,
   };
 }

@@ -4,327 +4,360 @@ const BASE_URL = '/api';
 
 export const fallbackMovies = [
   {
-    id: 'pushpa-2',
-    title: 'Pushpa 2: The Rule',
-    description: 'The clash between Pushpa Raj and Bhanwar Singh Shekhawat escalates into an all-out war of supremacy, power, and syndicates.',
-    poster_url: 'https://upload.wikimedia.org/wikipedia/en/1/11/Pushpa_2-_The_Rule.jpg',
-    backdrop_url: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=1200&auto=format&fit=crop&q=80',
-    trailer_url: 'https://www.youtube.com/embed/g3JUbgZXflM',
-    duration_min: 201,
-    rating: 4.9,
-    genre: ['Action', 'Thriller', 'Drama'],
-    language: ['Hindi', 'Telugu', 'Tamil'],
-    certification: 'UA',
-    status: 'now_showing',
-    release_date: '2024-12-05',
-    director: 'Sukumar',
-    cast: [{ name: 'Allu Arjun', role: 'Pushpa Raj' }, { name: 'Rashmika Mandanna', role: 'Srivalli' }]
-  },
-  {
-    id: 'chhaava',
-    title: 'Chhaava',
-    description: 'The monumental saga of Chhatrapati Sambhaji Maharaj, the valiant second ruler of the Maratha Empire and his unyielding courage against the Mughal army.',
-    poster_url: 'https://upload.wikimedia.org/wikipedia/en/7/75/Chhaava_film_poster.jpg',
-    backdrop_url: 'https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?w=1200&auto=format&fit=crop&q=80',
-    trailer_url: 'https://www.youtube.com/embed/ZqA0w-F_jOQ',
-    duration_min: 162,
-    rating: 4.9,
-    genre: ['Action', 'Drama', 'Period'],
-    language: ['Hindi', 'Marathi'],
-    certification: 'UA',
-    status: 'now_showing',
-    release_date: '2025-02-14',
-    director: 'Laxman Utekar',
-    cast: [{ name: 'Vicky Kaushal', role: 'Chhatrapati Sambhaji Maharaj' }, { name: 'Rashmika Mandanna', role: 'Yesubai' }]
-  },
-  {
-    id: 'f1-apex',
-    title: 'F1: The Apex Pursuit',
-    description: 'A retired Formula 1 veteran returns to motorsport to partner and mentor an extraordinary rookie driver at the APXGP racing team.',
-    poster_url: 'https://upload.wikimedia.org/wikipedia/en/3/38/F1_%282025_film%29.png',
-    backdrop_url: 'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=1200&auto=format&fit=crop&q=80',
-    trailer_url: 'https://www.youtube.com/embed/8v_4O44wvqg',
-    duration_min: 145,
-    rating: 4.9,
-    genre: ['Action', 'Drama', 'Sports'],
-    language: ['English', 'Hindi'],
-    certification: 'UA',
-    status: 'now_showing',
-    release_date: '2025-06-27',
-    director: 'Joseph Kosinski',
-    cast: [{ name: 'Brad Pitt', role: 'Sonny Hayes' }, { name: 'Damson Idris', role: 'Joshua Pearce' }]
-  },
-  {
-    id: 'gladiator-2',
-    title: 'Gladiator II',
-    description: 'Years after witnessing the death of Maximus at the hands of his uncle, Lucius must enter the Colosseum after his home is conquered by the tyrannical Emperors.',
-    poster_url: 'https://upload.wikimedia.org/wikipedia/en/0/04/Gladiator_II_%282024%29_poster.jpg',
-    backdrop_url: 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=1200&auto=format&fit=crop&q=80',
-    trailer_url: 'https://www.youtube.com/embed/4rgYUipGJNo',
-    duration_min: 148,
-    rating: 4.8,
-    genre: ['Action', 'Adventure', 'Drama'],
-    language: ['English', 'Hindi'],
-    certification: 'A',
-    status: 'now_showing',
-    release_date: '2024-11-15',
-    director: 'Ridley Scott',
-    cast: [{ name: 'Paul Mescal', role: 'Lucius Verus' }, { name: 'Denzel Washington', role: 'Macrinus' }]
-  },
-  {
-    id: 'mufasa-lion-king',
-    title: 'Mufasa: The Lion King',
-    description: 'An orphaned cub lost and alone meets a sympathetic lion named Taka—the heir to a royal bloodline—initiating an expansive journey across the African savanna.',
-    poster_url: 'https://upload.wikimedia.org/wikipedia/en/0/0b/Mufasa_The_Lion_King_Movie_2024.jpeg',
-    backdrop_url: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?w=1200&auto=format&fit=crop&q=80',
-    trailer_url: 'https://www.youtube.com/embed/o17MF9vnabg',
-    duration_min: 118,
-    rating: 4.8,
-    genre: ['Animation', 'Adventure', 'Family'],
-    language: ['English', 'Hindi', 'Tamil'],
-    certification: 'U',
-    status: 'now_showing',
-    release_date: '2024-12-20',
-    director: 'Barry Jenkins',
-    cast: [{ name: 'Shah Rukh Khan (Voice)', role: 'Mufasa (Hindi)' }]
-  },
-  {
-    id: 'sitaare-zameen-par',
-    title: 'Sitaare Zameen Par',
-    description: 'An uplifting and humorous sports drama celebrating neurodivergent athletes coached by an unconventional mentor.',
-    poster_url: 'https://upload.wikimedia.org/wikipedia/en/thumb/8/87/Sitaare_Zameen_Par_poster.jpg/500px-Sitaare_Zameen_Par_poster.jpg',
-    backdrop_url: 'https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?w=1200&auto=format&fit=crop&q=80',
-    trailer_url: 'https://www.youtube.com/embed/6_d0zV5HjD4',
-    duration_min: 155,
-    rating: 4.8,
-    genre: ['Drama', 'Sports', 'Family'],
-    language: ['Hindi'],
-    certification: 'U',
-    status: 'now_showing',
-    release_date: '2025-06-20',
-    director: 'R. S. Prasanna',
-    cast: [{ name: 'Aamir Khan', role: 'Coach' }, { name: "Genelia D'Souza", role: 'Mentor' }]
-  },
-  {
-    id: 'game-changer',
-    title: 'Game Changer',
-    description: 'An honest Indian Administrative Service (IAS) officer fights against corrupt political dynasties to guarantee free and transparent elections.',
-    poster_url: 'https://upload.wikimedia.org/wikipedia/en/6/6a/Game_Changer_Telugu.jpg',
-    backdrop_url: 'https://images.unsplash.com/photo-1470115636492-6d2b56f9146d?w=1200&auto=format&fit=crop&q=80',
-    trailer_url: 'https://www.youtube.com/embed/gB8jW_D8Krg',
+    id: 'drishyam-the-conclusion',
+    title: 'Drishyam The Conclusion',
+    description: 'Seven years after Georgekutty and Vijay Salgaonkar faced the law, a sensational new discovery reopens the missing body investigation, leading to the ultimate battle of wits and family sacrifice.',
+    poster_url: 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=800&auto=format&fit=crop&q=80',
+    backdrop_url: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=1400&auto=format&fit=crop&q=80',
+    trailer_url: 'https://www.youtube.com/embed/9g3eP_F6Qv8',
     duration_min: 165,
-    rating: 4.7,
-    genre: ['Action', 'Thriller', 'Drama'],
-    language: ['Telugu', 'Hindi', 'Tamil'],
+    rating: 8.8,
+    votes: 108420,
+    genre: ['Drama', 'Mystery', 'Thriller'],
+    language: ['Hindi', 'Malayalam', 'Telugu', 'Tamil'],
     certification: 'UA',
     status: 'now_showing',
-    release_date: '2025-01-10',
-    director: 'S. Shankar',
-    cast: [{ name: 'Ram Charan', role: 'Ram Nandan IAS' }, { name: 'Kiara Advani', role: 'Deepika' }]
+    release_date: '2026-08-02',
+    director: 'Abhishek Pathak',
+    cast: [
+      { name: 'Ajay Devgn', role: 'Vijay Salgaonkar' },
+      { name: 'Tabu', role: 'Meera Deshmukh' },
+      { name: 'Akshaye Khanna', role: 'IG Tarun Ahlawat' },
+      { name: 'Shriya Saran', role: 'Nandini Salgaonkar' }
+    ]
   },
   {
-    id: 'bhool-bhulaiyaa-3',
-    title: 'Bhool Bhulaiyaa 3',
-    description: 'Rooh Baba returns to the haunted palace of Raktaghat only to be confronted by two vengeful spirits claiming to be Manjulika.',
-    poster_url: 'https://upload.wikimedia.org/wikipedia/en/e/e4/Bhool_Bhulaiyaa_3_poster.jpg',
-    backdrop_url: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=1200&auto=format&fit=crop&q=80',
-    trailer_url: 'https://www.youtube.com/embed/5FkXbL_j_c8',
+    id: 'doraemon-undersea',
+    title: 'Doraemon: Castle of the Undersea Devil',
+    description: 'Nobita and his friends embark on an epic camping expedition beneath the Atlantic Ocean, uncovering an ancient underwater civilization in danger of global annihilation.',
+    poster_url: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b675?w=800&auto=format&fit=crop&q=80',
+    backdrop_url: 'https://images.unsplash.com/photo-1682687220063-4742bd7fd538?w=1400&auto=format&fit=crop&q=80',
+    trailer_url: 'https://www.youtube.com/embed/n4p_yO1x_eI',
+    duration_min: 110,
+    rating: 9.1,
+    votes: 15400,
+    genre: ['Adventure', 'Animation', 'Comedy', 'Family', 'Fantasy'],
+    language: ['Hindi', 'Japanese', 'English'],
+    certification: 'U',
+    status: 'now_showing',
+    release_date: '2026-06-15',
+    director: 'Tsutomu Shibayama',
+    cast: [
+      { name: 'Wasabi Mizuta', role: 'Doraemon' },
+      { name: 'Megumi Ohara', role: 'Nobita Nobi' },
+      { name: 'Yumi Kakazu', role: 'Shizuka Minamoto' }
+    ]
+  },
+  {
+    id: 'hanuman-ansh',
+    title: 'Hanuman Ansh',
+    description: 'A contemporary mythological chronicle following an unassuming young seeker in rural India who awakens the primordial, unbreakable divine lineage of Lord Hanuman to safeguard righteousness against a looming shadow.',
+    poster_url: 'https://images.unsplash.com/photo-1563089145-599997674d42?w=800&auto=format&fit=crop&q=80',
+    backdrop_url: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=1400&auto=format&fit=crop&q=80',
+    trailer_url: 'https://www.youtube.com/embed/92U6Y9JbB2Y',
     duration_min: 158,
-    rating: 4.7,
-    genre: ['Comedy', 'Horror', 'Mystery'],
-    language: ['Hindi'],
-    certification: 'UA',
+    rating: 9.6,
+    votes: 290150,
+    genre: ['Biography', 'Devotional', 'Drama', 'Mythology'],
+    language: ['Hindi', 'Telugu', 'Tamil', 'Kannada'],
+    certification: 'U',
     status: 'now_showing',
-    release_date: '2024-11-01',
-    director: 'Anees Bazmee',
-    cast: [{ name: 'Kartik Aaryan', role: 'Rooh Baba' }, { name: 'Vidya Balan', role: 'Manjulika' }]
+    release_date: '2026-05-18',
+    director: 'Prasanth Varma',
+    cast: [
+      { name: 'Teja Sajja', role: 'Hanumanth / Ansh' },
+      { name: 'Amritha Aiyer', role: 'Meenakshi' },
+      { name: 'Varalaxmi Sarathkumar', role: 'Anjamma' }
+    ]
   },
   {
-    id: 'singham-again',
-    title: 'Singham Again',
-    description: 'DCP Bajirao Singham unites the Cop Universe on a high-stakes cross-border rescue mission.',
-    poster_url: 'https://upload.wikimedia.org/wikipedia/en/0/04/Singham_Again_poster.jpg',
-    backdrop_url: 'https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=1200&auto=format&fit=crop&q=80',
-    trailer_url: 'https://www.youtube.com/embed/1kVK0mP_32Y',
-    duration_min: 165,
-    rating: 4.6,
-    genre: ['Action', 'Drama', 'Thriller'],
-    language: ['Hindi'],
-    certification: 'UA',
-    status: 'now_showing',
-    release_date: '2024-11-01',
-    director: 'Rohit Shetty',
-    cast: [{ name: 'Ajay Devgn', role: 'Bajirao Singham' }, { name: 'Deepika Padukone', role: 'Shakti Shetty' }]
-  },
-  {
-    id: 'captain-america-4',
-    title: 'Captain America: Brave New World',
-    description: 'Sam Wilson finds himself in the middle of an international incident as he must discover the motive behind a global conspiracy.',
-    poster_url: 'https://upload.wikimedia.org/wikipedia/en/a/a4/Captain_America_Brave_New_World_poster.jpg',
-    backdrop_url: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=1200&auto=format&fit=crop&q=80',
-    trailer_url: 'https://www.youtube.com/embed/1pHDWnXmKMY',
-    duration_min: 118,
-    rating: 4.8,
-    genre: ['Action', 'Sci-Fi', 'Adventure'],
-    language: ['English', 'Hindi'],
-    certification: 'UA',
-    status: 'upcoming',
-    release_date: '2025-02-14',
-    director: 'Julius Onah',
-    cast: [{ name: 'Anthony Mackie', role: 'Sam Wilson' }, { name: 'Harrison Ford', role: 'President Ross' }]
-  },
-  {
-    id: 'kannappa',
-    title: 'Kannappa',
-    description: 'The monumental tale of the supreme devotee of Lord Shiva with divine battles and spiritual grandeur.',
-    poster_url: 'https://upload.wikimedia.org/wikipedia/en/e/ed/Kannappa_%28film%29.jpg',
-    backdrop_url: 'https://images.unsplash.com/photo-1478760329108-5c3ed9d495a0?w=1200&auto=format&fit=crop&q=80',
-    trailer_url: 'https://www.youtube.com/embed/hJ5f_F53aQY',
-    duration_min: 165,
-    rating: 4.6,
-    genre: ['Action', 'Mythology', 'Drama'],
-    language: ['Telugu', 'Hindi', 'Tamil'],
-    certification: 'UA',
-    status: 'upcoming',
-    release_date: '2025-07-04',
-    director: 'Mukesh Kumar Singh',
-    cast: [{ name: 'Vishnu Manchu', role: 'Kannappa' }, { name: 'Prabhas', role: 'Rudra' }]
-  },
-  {
-    id: 'baby-john',
-    title: 'Baby John',
-    description: 'A former cop assumes a peaceful identity to protect his young daughter until his violent past reemerges.',
-    poster_url: 'https://upload.wikimedia.org/wikipedia/en/thumb/2/29/Baby_John_%28title_card%29.jpg/500px-Baby_John_%28title_card%29.jpg',
-    backdrop_url: 'https://images.unsplash.com/photo-1448375240586-882707db888b?w=1200&auto=format&fit=crop&q=80',
-    trailer_url: 'https://www.youtube.com/embed/fGfE0FjIq20',
-    duration_min: 152,
-    rating: 4.5,
-    genre: ['Action', 'Thriller'],
-    language: ['Hindi'],
-    certification: 'UA',
-    status: 'now_showing',
-    release_date: '2024-12-25',
-    director: 'Kalees',
-    cast: [{ name: 'Varun Dhawan', role: 'Baby John' }, { name: 'Keerthy Suresh', role: 'Pooja' }]
-  },
-  {
-    id: 'dune-2',
-    title: 'Dune: Part Two',
-    description: 'Paul Atreides unites with Chani and the Fremen while seeking revenge against the conspirators who destroyed his family.',
-    poster_url: 'https://upload.wikimedia.org/wikipedia/en/5/52/Dune_Part_Two_poster.jpeg',
-    backdrop_url: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=1200&auto=format&fit=crop&q=80',
+    id: 'the-vvaan',
+    title: 'The Vvaan - Force of the Forrest',
+    description: 'An ancient guardian tribe entrenched deep in the forbidden Himalayan rainforest confronts ruthless industrial mercenaries trying to awaken a dormant dark bio-force.',
+    poster_url: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=800&auto=format&fit=crop&q=80',
+    backdrop_url: 'https://images.unsplash.com/photo-1448375240586-882707db888b?w=1400&auto=format&fit=crop&q=80',
     trailer_url: 'https://www.youtube.com/embed/Way9Dexny3w',
-    duration_min: 166,
-    rating: 4.9,
-    genre: ['Sci-Fi', 'Adventure', 'Action'],
-    language: ['English', 'Hindi'],
+    duration_min: 152,
+    rating: 8.5,
+    votes: 43700,
+    genre: ['Action', 'Adventure', 'Fantasy', 'Mystery', 'Thriller'],
+    language: ['Hindi', 'Tamil', 'Telugu'],
     certification: 'UA',
     status: 'now_showing',
-    release_date: '2024-03-01',
-    director: 'Denis Villeneuve',
-    cast: [{ name: 'Timothée Chalamet', role: 'Paul Atreides' }, { name: 'Zendaya', role: 'Chani' }]
+    release_date: '2026-07-10',
+    director: 'Deepak Shivdasani',
+    cast: [
+      { name: 'Sidharth Malhotra', role: 'Rudra / Vvaan' },
+      { name: 'Sara Ali Khan', role: 'Dr. Ira Sharma' },
+      { name: 'Pankaj Tripathi', role: 'Elder Guruji' }
+    ]
   },
   {
-    id: 'deadpool-wolverine',
-    title: 'Deadpool & Wolverine',
-    description: 'A listless Wade Wilson toils away in civilian life until the Time Variance Authority pulls him into a new mission alongside Wolverine.',
-    poster_url: 'https://upload.wikimedia.org/wikipedia/en/4/4d/Deadpool_%26_Wolverine_poster.jpg',
-    backdrop_url: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=1200&auto=format&fit=crop&q=80',
-    trailer_url: 'https://www.youtube.com/embed/73_1biulkYk',
-    duration_min: 128,
-    rating: 4.8,
-    genre: ['Action', 'Comedy', 'Sci-Fi'],
+    id: 'other-mommy',
+    title: 'Other Mommy',
+    description: 'When a nine-year-old child begins communicating with an uncanny entity behind her bedroom vanity mirror claiming to be her true mother, horrifying supernatural secrets consume the household.',
+    poster_url: 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=800&auto=format&fit=crop&q=80',
+    backdrop_url: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=1400&auto=format&fit=crop&q=80',
+    trailer_url: 'https://www.youtube.com/embed/5FkXbL_j_c8',
+    duration_min: 104,
+    rating: 6.4,
+    votes: 1920,
+    genre: ['Horror', 'Thriller', 'Mystery'],
     language: ['English', 'Hindi'],
     certification: 'A',
     status: 'now_showing',
-    release_date: '2024-07-26',
-    director: 'Shawn Levy',
-    cast: [{ name: 'Ryan Reynolds', role: 'Deadpool' }, { name: 'Hugh Jackman', role: 'Wolverine' }]
+    release_date: '2026-09-04',
+    director: 'David F. Sandberg',
+    cast: [
+      { name: 'Rebecca Ferguson', role: 'Clara / The Entity' },
+      { name: 'Woody Norman', role: 'Leo' },
+      { name: 'Patrick Wilson', role: 'Detective Miller' }
+    ]
   },
   {
-    id: 'kalki-2898-ad',
-    title: 'Kalki 2898 AD',
-    description: 'In the post-apocalyptic city of Kasi in 2898 AD, a battle erupts to protect the unborn avatar from Supreme Yaskin.',
-    poster_url: 'https://upload.wikimedia.org/wikipedia/en/4/4c/Kalki_2898_AD.jpg',
-    backdrop_url: 'https://images.unsplash.com/photo-1478760329108-5c3ed9d495a0?w=1200&auto=format&fit=crop&q=80',
-    trailer_url: 'https://www.youtube.com/embed/kQDd1AhGIHk',
-    duration_min: 181,
-    rating: 4.8,
-    genre: ['Sci-Fi', 'Action', 'Mythology'],
-    language: ['Telugu', 'Hindi', 'Tamil'],
-    certification: 'UA',
-    status: 'now_showing',
-    release_date: '2024-06-27',
-    director: 'Nag Ashwin',
-    cast: [{ name: 'Prabhas', role: 'Bhairava' }, { name: 'Amitabh Bachchan', role: 'Ashwatthama' }]
-  },
-  {
-    id: 'stree-2',
-    title: 'Stree 2: Sarkate Ka Aatank',
-    description: 'The town of Chanderi is haunted once again by a headless entity named Sarkata that abducts modern women.',
-    poster_url: 'https://upload.wikimedia.org/wikipedia/en/thumb/4/4b/Stree_2_poster.jpg/500px-Stree_2_poster.jpg',
-    backdrop_url: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=1200&auto=format&fit=crop&q=80',
-    trailer_url: 'https://www.youtube.com/embed/KVnhe_Egw5w',
-    duration_min: 147,
-    rating: 4.8,
-    genre: ['Comedy', 'Horror'],
-    language: ['Hindi'],
-    certification: 'UA',
-    status: 'now_showing',
-    release_date: '2024-08-15',
-    director: 'Amar Kaushik',
-    cast: [{ name: 'Rajkummar Rao', role: 'Vicky' }, { name: 'Shraddha Kapoor', role: 'She' }]
-  },
-  {
-    id: 'superman-2025',
-    title: 'Superman (2025)',
-    description: 'Superman reconciles his alien Kryptonian heritage with his human upbringing in Smallville, Kansas.',
-    poster_url: 'https://upload.wikimedia.org/wikipedia/en/thumb/2/23/Superman_%282025_film%29_poster.jpg/500px-Superman_%282025_film%29_poster.jpg',
-    backdrop_url: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=1200&auto=format&fit=crop&q=80',
-    trailer_url: 'https://www.youtube.com/embed/1pHDWnXmKMY',
-    duration_min: 145,
-    rating: 4.9,
+    id: 'spider-man-brand-new-day',
+    title: 'Spider-Man: Brand New Day',
+    description: 'Peter Parker navigates college and adulthood in New York City with no one remembering his identity, until a lethal underworld conspiracy challenges the web-slinger to forge a brand new heroic legacy.',
+    poster_url: 'https://images.unsplash.com/photo-1635805737707-575885ab0820?w=800&auto=format&fit=crop&q=80',
+    backdrop_url: 'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=1400&auto=format&fit=crop&q=80',
+    trailer_url: 'https://www.youtube.com/embed/shW9i6k8cB0',
+    duration_min: 146,
+    rating: 9.2,
+    votes: 82000,
     genre: ['Action', 'Sci-Fi', 'Adventure'],
-    language: ['English', 'Hindi'],
+    language: ['English', 'Hindi', 'Tamil', 'Telugu', 'Kannada', 'Malayalam'],
     certification: 'UA',
     status: 'upcoming',
-    release_date: '2025-07-11',
-    director: 'James Gunn',
-    cast: [{ name: 'David Corenswet', role: 'Superman' }, { name: 'Rachel Brosnahan', role: 'Lois Lane' }]
+    release_date: '2026-07-24',
+    director: 'Destin Daniel Cretton',
+    cast: [
+      { name: 'Tom Holland', role: 'Peter Parker / Spider-Man' },
+      { name: 'Zendaya', role: 'MJ' },
+      { name: 'Mark Ruffalo', role: 'Bruce Banner / Hulk' }
+    ]
+  },
+  {
+    id: 'insidious-out-of-the-further',
+    title: 'Insidious: Out of The Further',
+    description: 'The Lambert bloodline faces the deepest, most terrifying stratum of The Further, where demonic entities construct an inescapable psychic labyrinth.',
+    poster_url: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800&auto=format&fit=crop&q=80',
+    backdrop_url: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=1400&auto=format&fit=crop&q=80',
+    trailer_url: 'https://www.youtube.com/embed/m_KkYt2Vj8s',
+    duration_min: 112,
+    rating: 8.2,
+    votes: 31200,
+    genre: ['Horror', 'Mystery', 'Thriller'],
+    language: ['English', 'Hindi', 'Tamil', 'Telugu'],
+    certification: 'A',
+    status: 'upcoming',
+    release_date: '2026-08-28',
+    director: 'Patrick Wilson',
+    cast: [
+      { name: 'Patrick Wilson', role: 'Josh Lambert' },
+      { name: 'Ty Simpkins', role: 'Dalton Lambert' },
+      { name: 'Rose Byrne', role: 'Renai Lambert' }
+    ]
+  },
+  {
+    id: 'the-last-meal',
+    title: 'The Last Meal',
+    description: 'An acclaimed veteran chef serving high-profile dignitaries in an isolated heritage haveli discovers that dinner tonight will decide the fate of a covert political coup.',
+    poster_url: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=800&auto=format&fit=crop&q=80',
+    backdrop_url: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1400&auto=format&fit=crop&q=80',
+    trailer_url: 'https://www.youtube.com/embed/6_d0zV5HjD4',
+    duration_min: 125,
+    rating: 7.9,
+    votes: 8900,
+    genre: ['Drama', 'Thriller', 'Crime'],
+    language: ['Hindi'],
+    certification: 'UA',
+    status: 'upcoming',
+    release_date: '2026-09-18',
+    director: 'Hansal Mehta',
+    cast: [
+      { name: 'Manoj Bajpayee', role: 'Chef Devrat Sen' },
+      { name: 'Jaideep Ahlawat', role: 'Minister Rao' },
+      { name: 'Tillotama Shome', role: 'Investigator Suman' }
+    ]
+  },
+  {
+    id: 'the-social-reckoning',
+    title: 'The Social Reckoning',
+    description: 'The gripping biographical exposé of tech founders, whistleblowers, and senate investigations that cracked open the algorithms ruling global democracy.',
+    poster_url: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=800&auto=format&fit=crop&q=80',
+    backdrop_url: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=1400&auto=format&fit=crop&q=80',
+    trailer_url: 'https://www.youtube.com/embed/4rgYUipGJNo',
+    duration_min: 142,
+    rating: 9.3,
+    votes: 1340,
+    genre: ['Biography', 'Drama', 'Thriller'],
+    language: ['English', 'Hindi'],
+    certification: 'UA',
+    status: 'now_showing',
+    release_date: '2026-06-26',
+    director: 'David Fincher',
+    cast: [
+      { name: 'Jesse Eisenberg', role: 'David Vance' },
+      { name: 'Rooney Mara', role: 'Erica Albright' },
+      { name: 'Andrew Garfield', role: 'Eduardo Saverin' }
+    ]
+  },
+  {
+    id: 'the-paradise',
+    title: 'The Paradise',
+    description: 'Set in the gritty 1980s borderlands, a charismatic renegade leads a rebellion against ruthless warlords controlling gold mines and trade routes.',
+    poster_url: 'https://images.unsplash.com/photo-1533488765986-dfa2a9939acd?w=800&auto=format&fit=crop&q=80',
+    backdrop_url: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=1400&auto=format&fit=crop&q=80',
+    trailer_url: 'https://www.youtube.com/embed/g3JUbgZXflM',
+    duration_min: 168,
+    rating: 9.4,
+    votes: 506200,
+    genre: ['Action', 'Adventure', 'Drama'],
+    language: ['Telugu', 'Hindi', 'Tamil', 'Malayalam'],
+    certification: 'A',
+    status: 'upcoming',
+    release_date: '2026-11-06',
+    director: 'Srikanth Odela',
+    cast: [
+      { name: 'Nani', role: 'Bhairava' },
+      { name: 'Keerthy Suresh', role: 'Mallamma' },
+      { name: 'Shine Tom Chacko', role: 'Chinababu' }
+    ]
+  },
+  {
+    id: 'rajini-jailer-2',
+    title: 'Rajini: The Jailer 2',
+    description: 'Tiger Muthuvel Pandian returns from retirement when a global weapons cartel threatens law enforcement across southern India, unleashing pure cinematic mass euphoria.',
+    poster_url: 'https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=800&auto=format&fit=crop&q=80',
+    backdrop_url: 'https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?w=1400&auto=format&fit=crop&q=80',
+    trailer_url: 'https://www.youtube.com/embed/xenOE1Tma0A',
+    duration_min: 172,
+    rating: 9.5,
+    votes: 157300,
+    genre: ['Action', 'Thriller'],
+    language: ['Tamil', 'Hindi', 'Telugu', 'Kannada'],
+    certification: 'UA',
+    status: 'upcoming',
+    release_date: '2026-10-15',
+    director: 'Nelson Dilipkumar',
+    cast: [
+      { name: 'Rajinikanth', role: 'Tiger Muthuvel Pandian' },
+      { name: 'Mohanlal', role: 'Mathew' },
+      { name: 'Shiva Rajkumar', role: 'Narasimha' },
+      { name: 'Ramya Krishnan', role: 'Vijaya' }
+    ]
+  },
+  {
+    id: 'haiwaan',
+    title: 'Haiwaan',
+    description: 'In the underbelly of Mumbai and Bangkok, an uncompromising intelligence operative engages in a cat-and-mouse hunt against a ruthless psychopathic arms broker.',
+    poster_url: 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=800&auto=format&fit=crop&q=80',
+    backdrop_url: 'https://images.unsplash.com/photo-1470115636492-6d2b56f9146d?w=1400&auto=format&fit=crop&q=80',
+    trailer_url: 'https://www.youtube.com/embed/1kVK0mP_32Y',
+    duration_min: 148,
+    rating: 5.8,
+    votes: 4720,
+    genre: ['Action', 'Crime', 'Thriller'],
+    language: ['Hindi'],
+    certification: 'A',
+    status: 'now_showing',
+    release_date: '2026-06-12',
+    director: 'Ali Abbas Zafar',
+    cast: [
+      { name: 'Akshay Kumar', role: 'Agent Vikram' },
+      { name: 'Saif Ali Khan', role: 'Rana Haiwaan' },
+      { name: 'Rakul Preet Singh', role: 'Aditi' }
+    ]
   },
   {
     id: 'war-2',
     title: 'War 2',
-    description: 'Major Kabir Dhaliwal confronts a rogue intelligence asset of immense lethality in a high-octane global manhunt.',
+    description: 'Major Kabir Dhaliwal confronts a rogue intelligence asset of immense lethality in a high-octane global manhunt across Italy, Tokyo, and Ladakh.',
     poster_url: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?w=800&auto=format&fit=crop&q=80',
-    backdrop_url: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=1200&auto=format&fit=crop&q=80',
-    trailer_url: 'https://www.youtube.com/embed/1kVK0mP_32Y',
+    backdrop_url: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=1400&auto=format&fit=crop&q=80',
+    trailer_url: 'https://www.youtube.com/embed/g3JUbgZXflM',
     duration_min: 160,
-    rating: 4.8,
-    genre: ['Action', 'Thriller'],
+    rating: 9.5,
+    votes: 215000,
+    genre: ['Action', 'Thriller', 'Spy'],
     language: ['Hindi', 'Telugu', 'Tamil'],
     certification: 'UA',
-    status: 'upcoming',
-    release_date: '2025-08-14',
+    status: 'now_showing',
+    release_date: '2026-08-14',
     director: 'Ayan Mukerji',
-    cast: [{ name: 'Hrithik Roshan', role: 'Kabir' }, { name: 'Jr NTR', role: 'Vikram' }]
+    cast: [
+      { name: 'Hrithik Roshan', role: 'Major Kabir Dhaliwal' },
+      { name: 'Jr. NTR', role: 'Agent Vikram / Shadow' },
+      { name: 'Kiara Advani', role: 'Dr. Tanya' }
+    ]
   },
   {
-    id: 'avatar-3',
-    title: 'Avatar: Fire and Ash',
-    description: 'Jake Sully and Neytiri encounter the Ash People, a more aggressive clan of Na’vi in volcanic Pandora.',
-    poster_url: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800&auto=format&fit=crop&q=80',
-    backdrop_url: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?w=1200&auto=format&fit=crop&q=80',
-    trailer_url: 'https://www.youtube.com/embed/4rgYUipGJNo',
-    duration_min: 190,
-    rating: 4.9,
-    genre: ['Sci-Fi', 'Adventure', 'Action'],
-    language: ['English', 'Hindi'],
+    id: 'toxic',
+    title: 'Toxic: A Fairy Tale for Grown-ups',
+    description: 'Set across the neon-drenched drug cartels and ports of 1970s London and Goa, a charismatic kingpin plays an uncompromising game of betrayal and empire.',
+    poster_url: 'https://images.unsplash.com/photo-1514306191717-452ec28c7814?w=800&auto=format&fit=crop&q=80',
+    backdrop_url: 'https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?w=1400&auto=format&fit=crop&q=80',
+    trailer_url: 'https://www.youtube.com/embed/kQDd1AhGIHk',
+    duration_min: 170,
+    rating: 9.6,
+    votes: 380000,
+    genre: ['Action', 'Crime', 'Drama'],
+    language: ['Kannada', 'Hindi', 'Telugu', 'Tamil', 'English'],
+    certification: 'A',
+    status: 'upcoming',
+    release_date: '2026-04-10',
+    director: 'Geetu Mohandas',
+    cast: [
+      { name: 'Yash', role: 'Raya' },
+      { name: 'Nayanthara', role: 'Maya' },
+      { name: 'Kiara Advani', role: 'Sasha' }
+    ]
+  },
+  {
+    id: 'ramayana-part-1',
+    title: 'Ramayana: Part 1',
+    description: 'Nitesh Tiwari’s monumental epic of the Ramayana chronicling Lord Rama’s exile, celestial battles, and divine steadfastness with world-class VFX by DNEG.',
+    poster_url: 'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?w=800&auto=format&fit=crop&q=80',
+    backdrop_url: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=1400&auto=format&fit=crop&q=80',
+    trailer_url: 'https://www.youtube.com/embed/hJ5f_F53aQY',
+    duration_min: 185,
+    rating: 9.8,
+    votes: 495000,
+    genre: ['Mythology', 'Action', 'Drama'],
+    language: ['Hindi', 'Telugu', 'Tamil', 'Kannada', 'Malayalam'],
+    certification: 'U',
+    status: 'upcoming',
+    release_date: '2026-10-30',
+    director: 'Nitesh Tiwari',
+    cast: [
+      { name: 'Ranbir Kapoor', role: 'Lord Rama' },
+      { name: 'Sai Pallavi', role: 'Mata Sita' },
+      { name: 'Yash', role: 'Lankesh Ravana' },
+      { name: 'Sunny Deol', role: 'Lord Hanuman' }
+    ]
+  },
+  {
+    id: 'avengers-doomsday',
+    title: 'Avengers: Doomsday',
+    description: 'The multiverse collides as the newly formed Avengers encounter the multiverse mastermind Victor Von Doom, sparking a cosmic war for existence.',
+    poster_url: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?w=800&auto=format&fit=crop&q=80',
+    backdrop_url: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=1400&auto=format&fit=crop&q=80',
+    trailer_url: 'https://www.youtube.com/embed/1pHDWnXmKMY',
+    duration_min: 175,
+    rating: 9.7,
+    votes: 610000,
+    genre: ['Action', 'Sci-Fi', 'Adventure'],
+    language: ['English', 'Hindi', 'Tamil', 'Telugu'],
     certification: 'UA',
     status: 'upcoming',
-    release_date: '2025-12-19',
-    director: 'James Cameron',
-    cast: [{ name: 'Sam Worthington', role: 'Jake' }, { name: 'Zoe Saldaña', role: 'Neytiri' }]
+    release_date: '2026-05-01',
+    director: 'Anthony and Joe Russo',
+    cast: [
+      { name: 'Robert Downey Jr.', role: 'Victor Von Doom / Doctor Doom' },
+      { name: 'Pedro Pascal', role: 'Reed Richards / Mr. Fantastic' },
+      { name: 'Benedict Cumberbatch', role: 'Doctor Strange' },
+      { name: 'Anthony Mackie', role: 'Captain America' }
+    ]
   }
 ];
 
@@ -384,10 +417,10 @@ export const fallbackTheatres = [
     city: 'Hyderabad',
     latitude: 17.4144,
     longitude: 78.4682,
-    distance_km: 3.1,
+    distance_km: 3.2,
     amenities: ['PCX Giant Screen', 'Dolby Atmos', 'Food Court'],
     screens: ['Giant Screen Audi 1'],
-    showtimes: ['11:00 AM', '02:30 PM', '06:30 PM', '10:00 PM']
+    showtimes: ['10:45 AM', '02:00 PM', '05:45 PM', '09:15 PM']
   },
   {
     id: 6,
@@ -396,10 +429,10 @@ export const fallbackTheatres = [
     city: 'Pune',
     latitude: 18.5622,
     longitude: 73.9167,
-    distance_km: 4.8,
+    distance_km: 6.0,
     amenities: ['4DX', 'IMAX Laser', 'Gourmet Lounge'],
     screens: ['Audi 1'],
-    showtimes: ['10:30 AM', '02:00 PM', '05:45 PM', '09:15 PM']
+    showtimes: ['11:15 AM', '02:45 PM', '06:15 PM', '09:45 PM']
   }
 ];
 
@@ -410,7 +443,7 @@ export const fallbackBeverages = [
     category: 'popcorn',
     price: 260,
     image_url: 'https://images.unsplash.com/photo-1578849278619-e73505e9610f?w=400&auto=format&fit=crop&q=80',
-    description: 'Warm popcorn glazed with buttery gourmet golden caramel.'
+    description: 'Fresh warm popcorn glazed in rich golden butter caramel.'
   },
   {
     id: 2,
@@ -426,7 +459,7 @@ export const fallbackBeverages = [
     category: 'snacks',
     price: 240,
     image_url: 'https://images.unsplash.com/photo-1513456852971-30c0b8199d4d?w=400&auto=format&fit=crop&q=80',
-    description: 'Crunchy tortilla chips with warm molten cheese sauce & salsa.'
+    description: 'Crisp tortilla chips served with warm melted cheese dip and spicy salsa.'
   },
   {
     id: 4,
@@ -434,7 +467,7 @@ export const fallbackBeverages = [
     category: 'drinks',
     price: 120,
     image_url: 'https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=400&auto=format&fit=crop&q=80',
-    description: 'Ice-cold bubbly cinema companion with zero sugar.'
+    description: 'Ice-cold bubbly refreshment with zero calories.'
   },
   {
     id: 5,
@@ -455,6 +488,7 @@ export const fallbackBeverages = [
 ];
 
 export const api = {
+  // ─── Movies API ───
   async getMovies() {
     try {
       const res = await fetch(`${BASE_URL}/movies`);
@@ -466,6 +500,58 @@ export const api = {
     }
   },
 
+  async createMovie(movieData) {
+    const res = await fetch(`${BASE_URL}/movies`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(movieData),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || 'Failed to create movie');
+    return data;
+  },
+
+  async updateMovie(id, movieData) {
+    const res = await fetch(`${BASE_URL}/movies/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(movieData),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || 'Failed to update movie');
+    return data;
+  },
+
+  async deleteMovie(id) {
+    const res = await fetch(`${BASE_URL}/movies/${id}`, {
+      method: 'DELETE',
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || 'Failed to delete movie');
+    return data;
+  },
+
+  async aiSearchMovie(query, autoSave = true) {
+    const res = await fetch(`${BASE_URL}/movies/ai-search`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query, autoSave }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || 'Gemini Flash AI search failed');
+    return data;
+  },
+
+  async sync2026Movies() {
+    const res = await fetch(`${BASE_URL}/movies/sync-2026`, {
+      method: 'POST',
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || 'Failed to sync 2026 movies');
+    return data;
+  },
+
+  // ─── Theatres API ───
   async getTheatres(city) {
     try {
       const url = city ? `${BASE_URL}/theatres?city=${encodeURIComponent(city)}` : `${BASE_URL}/theatres`;
@@ -480,6 +566,7 @@ export const api = {
     }
   },
 
+  // ─── Beverages API ───
   async getBeverages() {
     try {
       const res = await fetch(`${BASE_URL}/beverages`);
@@ -491,6 +578,7 @@ export const api = {
     }
   },
 
+  // ─── AI Concierge API ───
   async getAiRecommendation(payload) {
     try {
       const token = localStorage.getItem('cineverse_token');
@@ -529,11 +617,12 @@ export const api = {
     } catch {
       return {
         success: true,
-        reply: `🎬 **CineBot:** That's a great choice! Both **Pushpa 2: The Rule** and **Chhaava** are getting standing ovations in theatres right now. Would you like to pick your seats?`,
+        reply: "🎬 **CineBot:** Check out our 2026 releases like Drishyam The Conclusion, War 2, and Spider-Man: Brand New Day! What genre are you in the mood for?",
       };
     }
   },
 
+  // ─── Auth API ───
   async register(userData) {
     try {
       const res = await fetch(`${BASE_URL}/auth/register`, {
@@ -544,8 +633,7 @@ export const api = {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Registration failed');
       return data;
-    } catch (err) {
-      // Local fallback for offline/demo mode
+    } catch {
       const mockToken = 'mock_jwt_token_' + Date.now();
       const mockUser = {
         id: 'usr_' + Date.now(),
@@ -569,8 +657,7 @@ export const api = {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Login failed');
       return data;
-    } catch (err) {
-      // Local fallback for demo credentials
+    } catch {
       const isAdmin = credentials.email.includes('admin');
       const mockToken = 'mock_jwt_token_' + Date.now();
       const mockUser = {

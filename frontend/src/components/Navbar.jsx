@@ -12,6 +12,7 @@ export const Navbar = ({
   onOpenGame,
   onOpenSnacks,
   onOpenTickets,
+  onOpenMovieManager,
   user,
   onOpenAuth,
   onLogout,
@@ -226,6 +227,23 @@ export const Navbar = ({
           >
             <GamepadIcon size={18} />
             <span>Play 🎮</span>
+          </button>
+
+          <button
+            onClick={onOpenMovieManager}
+            className="btn btn-secondary"
+            title="Manage 2026 Movies with Gemini Flash AI"
+            style={{
+              padding: '8px 14px',
+              fontSize: '0.85rem',
+              borderColor: 'rgba(139, 92, 246, 0.4)',
+              color: '#c4b5fd',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+            }}
+          >
+            <span>⚡ 2026 Movies</span>
           </button>
 
           <button
