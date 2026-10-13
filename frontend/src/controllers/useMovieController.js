@@ -89,6 +89,17 @@ export function useMovieController(initialCity = 'Mumbai') {
     return res;
   };
 
+  // Update existing movie in database (fix trailers, posters, metadata)
+  const updateMovie = async (movieId, updateData) => {
+    const res = await api.updateMovie(movieId, updateData);
+    await refreshMovies();
+    if (selectedMovieDetail && selectedMovieDetail.id === movieId) {
+      // Keep selected detail view synchronized
+      setSelectedMovieDetail((prev) => (prev ? { ...prev, ...updateData } : null));
+    }
+    return res;
+  };
+
   // AI Search & Add using Gemini Flash
   const aiSearchAndAddMovie = async (query) => {
     const res = await api.aiSearchMovie(query);
@@ -126,6 +137,7 @@ export function useMovieController(initialCity = 'Mumbai') {
     openMovieManager,
     closeMovieManager,
     addMovie,
+    updateMovie,
     deleteMovie,
     aiSearchAndAddMovie,
     sync2026,

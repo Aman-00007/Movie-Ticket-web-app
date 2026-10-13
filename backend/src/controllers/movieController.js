@@ -219,14 +219,51 @@ exports.createMovie = async (req, res, next) => {
   }
 };
 
-// 7. Update Movie
+// Helper to normalize any YouTube link to iframe embed format
+const normalizeTrailerUrl = (url) => {
+  if (!url || typeof url !== 'string') return url;
+  const trimmed = url.trim();
+  if (trimmed.includes('youtube.com/embed/')) return trimmed;
+  
+  const shortMatch = trimmed.match(/youtu\.be\/([a-zA-Z0-9_-]+)/);
+  if (shortMatch && shortMatch[1]) {
+    return `https://www.youtube.com/embed/${shortMatch[1]}`;
+  }
+
+  const watchMatch = trimmed.match(/youtube\.com\/watch\?.*v=([a-zA-Z0-9_-]+)/);
+  if (watchMatch && watchMatch[1]) {
+    return `https://www.youtube.com/embed/${watchMatch[1]}`;
+  }
+
+  return trimmed;
+};
+
+// 7. Update Movie (Enables Admin to fix wrong trailer links, posters, titles, backdrops, etc.)
 exports.updateMovie = async (req, res, next) => {
   try {
     const movie = await Movie.findByPk(req.params.id);
     if (!movie) return res.status(404).json({ success: false, message: 'Movie not found' });
 
-    await movie.update(req.body);
-    res.json({ success: true, message: 'Movie updated successfully', data: movie });
+    const updateData = { ...req.body };
+    if (updateData.trailer_url) {
+      updateData.trailer_url = normalizeTrailerUrl(updateData.trailer_url);
+    }
+    if (updateData.backdrop_url && !updateData.banner_url) {
+      updateData.banner_url = updateData.backdrop_url;
+    }
+
+    const previousStatus = movie.status;
+    await movie.update(updateData);
+
+    // If status changed to now_showing, create shows if none exist
+    if (movie.status === 'now_showing' && previousStatus !== 'now_showing') {
+      const showCount = await Show.count({ where: { movie_id: movie.id } });
+      if (showCount === 0) {
+        await createShowsForMovie(movie);
+      }
+    }
+
+    res.json({ success: true, message: `Movie "${movie.title}" updated successfully in database!`, data: movie });
   } catch (err) {
     next(err);
   }

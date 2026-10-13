@@ -111,12 +111,13 @@ export function App() {
 
       {/* Modals & Sub-Views */}
 
-      {/* 2026 Movie Database Manager (Gemini Flash Web Search & Add / Delete) - ADMIN ONLY */}
+      {/* 2026 Movie Database Manager (Gemini Flash Web Search & Add / Edit / Delete) - ADMIN ONLY */}
       {movieCtrl.movieManagerOpen && isAdmin && (
         <MovieManagerModal
           movies={movieCtrl.movies}
           onClose={movieCtrl.closeMovieManager}
           onAddMovie={movieCtrl.addMovie}
+          onUpdateMovie={movieCtrl.updateMovie}
           onDeleteMovie={movieCtrl.deleteMovie}
           onAiSearchMovie={movieCtrl.aiSearchAndAddMovie}
           onSync2026={movieCtrl.sync2026}

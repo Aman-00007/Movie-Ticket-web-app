@@ -5,6 +5,7 @@ export const MovieManagerModal = ({
   movies = [],
   onClose,
   onAddMovie,
+  onUpdateMovie,
   onDeleteMovie,
   onAiSearchMovie,
   onSync2026,
@@ -16,6 +17,13 @@ export const MovieManagerModal = ({
   const [searchError, setSearchError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [deleteFilter, setDeleteFilter] = useState('');
+
+  // Editing existing movie state
+  const [editingMovie, setEditingMovie] = useState(null);
+  const [editFormData, setEditFormData] = useState(null);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [previewTrailerModal, setPreviewTrailerModal] = useState(null);
+  const [inspectMovieId, setInspectMovieId] = useState(null);
 
   // Manual Add Form State
   const [formData, setFormData] = useState({
@@ -119,9 +127,101 @@ export const MovieManagerModal = ({
     if (!window.confirm(`Are you sure you want to permanently delete "${title}" from the database?`)) return;
     try {
       await onDeleteMovie(id);
+      if (editingMovie && editingMovie.id === id) {
+        setEditingMovie(null);
+        setEditFormData(null);
+      }
       setSuccessMessage(`🗑️ "${title}" deleted from system.`);
     } catch (err) {
       setSearchError(err.message || 'Failed to delete movie');
+    }
+  };
+
+  // Helper to normalize YouTube URLs for iframe embed compatibility
+  const normalizeTrailerUrl = (url) => {
+    if (!url || typeof url !== 'string') return url;
+    const trimmed = url.trim();
+    if (trimmed.includes('youtube.com/embed/')) return trimmed;
+    const shortMatch = trimmed.match(/youtu\.be\/([a-zA-Z0-9_-]+)/);
+    if (shortMatch && shortMatch[1]) return `https://www.youtube.com/embed/${shortMatch[1]}`;
+    const watchMatch = trimmed.match(/youtube\.com\/watch\?.*v=([a-zA-Z0-9_-]+)/);
+    if (watchMatch && watchMatch[1]) return `https://www.youtube.com/embed/${watchMatch[1]}`;
+    return trimmed;
+  };
+
+  // Start Editing an Existing Movie
+  const handleStartEdit = (movie) => {
+    setEditingMovie(movie);
+    setEditFormData({
+      id: movie.id,
+      title: movie.title || '',
+      description: movie.description || '',
+      poster_url: movie.poster_url || '',
+      backdrop_url: movie.backdrop_url || movie.banner_url || '',
+      trailer_url: movie.trailer_url || '',
+      status: movie.status || 'now_showing',
+      release_date: movie.release_date || '2026-08-15',
+      duration_min: movie.duration_min || 140,
+      rating: movie.rating || 8.5,
+      votes: movie.votes || 50000,
+      certification: movie.certification || 'UA',
+      director: movie.director || '',
+      genre: Array.isArray(movie.genre) ? movie.genre.join(', ') : movie.genre || '',
+      language: Array.isArray(movie.language) ? movie.language.join(', ') : movie.language || '',
+      cast: Array.isArray(movie.cast)
+        ? movie.cast.map((c) => (typeof c === 'object' ? c.name : c)).join(', ')
+        : movie.cast || '',
+    });
+    setSuccessMessage('');
+    setSearchError('');
+    // Switch to manage tab if not already
+    setActiveTab('manage_delete');
+  };
+
+  const handleCancelEdit = () => {
+    setEditingMovie(null);
+    setEditFormData(null);
+  };
+
+  // Save Edits to PostgreSQL Database
+  const handleSaveEdit = async (e) => {
+    e.preventDefault();
+    if (!editFormData || !editingMovie) return;
+
+    setIsUpdating(true);
+    setSearchError('');
+    setSuccessMessage('');
+
+    try {
+      const payload = {
+        title: editFormData.title.trim(),
+        description: editFormData.description,
+        poster_url: editFormData.poster_url.trim(),
+        backdrop_url: editFormData.backdrop_url.trim(),
+        banner_url: editFormData.backdrop_url.trim(),
+        trailer_url: normalizeTrailerUrl(editFormData.trailer_url),
+        status: editFormData.status,
+        release_date: editFormData.release_date,
+        duration_min: parseInt(editFormData.duration_min, 10) || 120,
+        rating: parseFloat(editFormData.rating) || 8.0,
+        votes: parseInt(editFormData.votes, 10) || 1000,
+        certification: editFormData.certification || 'UA',
+        director: editFormData.director,
+        genre: editFormData.genre.split(',').map((s) => s.trim()).filter(Boolean),
+        language: editFormData.language.split(',').map((s) => s.trim()).filter(Boolean),
+        cast: editFormData.cast.split(',').map((name) => ({ name: name.trim(), role: 'Main Cast' })),
+      };
+
+      if (onUpdateMovie) {
+        await onUpdateMovie(editingMovie.id, payload);
+      }
+      setSuccessMessage(`✅ Successfully updated "${payload.title}" in PostgreSQL database! Updated poster & trailer saved.`);
+      setEditingMovie(null);
+      setEditFormData(null);
+    } catch (err) {
+      setSearchError(err.message || 'Failed to update movie in database');
+    } finally {
+      setIsUpdating(false);
     }
   };
 
@@ -294,7 +394,7 @@ export const MovieManagerModal = ({
               transition: 'all 0.2s',
             }}
           >
-            🗑️ Manage / Delete Movies ({movies.length})
+            ✏️ Manage, Edit & Delete ({movies.length})
           </button>
         </div>
 
@@ -636,9 +736,418 @@ export const MovieManagerModal = ({
             </form>
           )}
 
-          {/* TAB 3: Manage & Delete Existing Movies */}
+          {/* TAB 3: Manage, View Values, Edit & Delete Existing Movies */}
           {activeTab === 'manage_delete' && (
             <div>
+              {/* EDIT FORM (When a movie is selected for editing) */}
+              {editingMovie && editFormData ? (
+                <div
+                  style={{
+                    backgroundColor: 'rgba(255, 255, 255, 0.04)',
+                    border: '1px solid rgba(239, 68, 68, 0.3)',
+                    borderRadius: '16px',
+                    padding: '24px',
+                    marginBottom: '20px',
+                  }}
+                >
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      marginBottom: 18,
+                      borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+                      paddingBottom: 14,
+                    }}
+                  >
+                    <div>
+                      <div style={{ fontSize: '1.2rem', fontWeight: 900, color: 'white', display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <span>✏️ Editing Movie Values:</span>
+                        <span style={{ color: 'var(--accent-red)' }}>{editingMovie.title}</span>
+                      </div>
+                      <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginTop: 4 }}>
+                        DB ID: #{editingMovie.id} • Update wrong poster or trailer links and save directly to database.
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleCancelEdit}
+                      style={{
+                        padding: '8px 16px',
+                        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                        border: '1px solid rgba(255, 255, 255, 0.2)',
+                        color: 'white',
+                        borderRadius: 8,
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                      }}
+                    >
+                      ✕ Cancel & Close Editor
+                    </button>
+                  </div>
+
+                  {/* Live Poster & Trailer Preview Strip */}
+                  <div
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: '120px 1fr auto',
+                      gap: 20,
+                      alignItems: 'center',
+                      backgroundColor: 'rgba(0, 0, 0, 0.4)',
+                      padding: 16,
+                      borderRadius: 12,
+                      border: '1px solid rgba(255, 255, 255, 0.08)',
+                      marginBottom: 20,
+                    }}
+                  >
+                    {/* Live Poster Preview */}
+                    <div style={{ textAlign: 'center' }}>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: 4, fontWeight: 700 }}>
+                        POSTER PREVIEW
+                      </div>
+                      <img
+                        src={editFormData.poster_url}
+                        alt="Poster Preview"
+                        onError={(e) => {
+                          e.target.src = 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=400';
+                        }}
+                        style={{
+                          width: 80,
+                          height: 110,
+                          objectFit: 'cover',
+                          borderRadius: 8,
+                          border: '2px solid rgba(255, 255, 255, 0.2)',
+                          display: 'block',
+                          margin: '0 auto',
+                        }}
+                      />
+                    </div>
+
+                    {/* Links Summary */}
+                    <div>
+                      <div style={{ fontSize: '0.88rem', fontWeight: 800, color: 'white', marginBottom: 6 }}>
+                        Current Poster & Trailer URLs:
+                      </div>
+                      <div style={{ fontSize: '0.78rem', color: '#93c5fd', wordBreak: 'break-all', marginBottom: 4 }}>
+                        <strong>Poster:</strong> {editFormData.poster_url || '(empty)'}
+                      </div>
+                      <div style={{ fontSize: '0.78rem', color: '#fca5a5', wordBreak: 'break-all' }}>
+                        <strong>Trailer:</strong> {editFormData.trailer_url || '(empty)'}
+                      </div>
+                    </div>
+
+                    {/* Test Trailer Button */}
+                    <div>
+                      <button
+                        type="button"
+                        onClick={() => setPreviewTrailerModal(normalizeTrailerUrl(editFormData.trailer_url))}
+                        disabled={!editFormData.trailer_url}
+                        style={{
+                          padding: '10px 18px',
+                          backgroundColor: editFormData.trailer_url ? 'rgba(239, 68, 68, 0.25)' : 'rgba(255, 255, 255, 0.05)',
+                          border: '1px solid ' + (editFormData.trailer_url ? 'var(--accent-red)' : 'rgba(255, 255, 255, 0.1)'),
+                          color: editFormData.trailer_url ? 'white' : 'var(--text-muted)',
+                          borderRadius: 10,
+                          fontWeight: 800,
+                          fontSize: '0.88rem',
+                          cursor: editFormData.trailer_url ? 'pointer' : 'not-allowed',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 6,
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
+                        ▶️ Test Trailer
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Form */}
+                  <form onSubmit={handleSaveEdit}>
+                    {/* CRITICAL: Poster & Trailer URLs (Highlighted) */}
+                    <div
+                      style={{
+                        backgroundColor: 'rgba(239, 68, 68, 0.08)',
+                        border: '1px solid rgba(239, 68, 68, 0.3)',
+                        borderRadius: 12,
+                        padding: 16,
+                        marginBottom: 20,
+                      }}
+                    >
+                      <div style={{ fontSize: '0.92rem', fontWeight: 900, color: '#fca5a5', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <span>🔗 Media Links (Poster & Trailer URL)</span>
+                        <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)' }}>
+                          - Fix wrong links here to update them immediately
+                        </span>
+                      </div>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                        <div>
+                          <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 800, marginBottom: 6, color: 'white' }}>
+                            🖼️ Poster Image URL (Web link / Unsplash / CDN)
+                          </label>
+                          <input
+                            type="url"
+                            required
+                            value={editFormData.poster_url}
+                            onChange={(e) => setEditFormData({ ...editFormData, poster_url: e.target.value })}
+                            placeholder="https://..."
+                            style={{
+                              width: '100%',
+                              padding: '11px 14px',
+                              borderRadius: 8,
+                              backgroundColor: '#121620',
+                              border: '1px solid #ef4444',
+                              color: 'white',
+                              fontSize: '0.88rem',
+                            }}
+                          />
+                        </div>
+
+                        <div>
+                          <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 800, marginBottom: 6, color: 'white' }}>
+                            🎬 YouTube Trailer Link (Watch or Embed link)
+                          </label>
+                          <input
+                            type="url"
+                            value={editFormData.trailer_url}
+                            onChange={(e) => setEditFormData({ ...editFormData, trailer_url: e.target.value })}
+                            placeholder="https://www.youtube.com/watch?v=... or https://youtu.be/..."
+                            style={{
+                              width: '100%',
+                              padding: '11px 14px',
+                              borderRadius: 8,
+                              backgroundColor: '#121620',
+                              border: '1px solid #ef4444',
+                              color: 'white',
+                              fontSize: '0.88rem',
+                            }}
+                          />
+                        </div>
+                      </div>
+
+                      <div style={{ marginTop: 14 }}>
+                        <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: 6, color: 'var(--text-secondary)' }}>
+                          🌄 Backdrop / Banner Image URL
+                        </label>
+                        <input
+                          type="url"
+                          value={editFormData.backdrop_url}
+                          onChange={(e) => setEditFormData({ ...editFormData, backdrop_url: e.target.value })}
+                          placeholder="https://..."
+                          style={{
+                            width: '100%',
+                            padding: '10px 14px',
+                            borderRadius: 8,
+                            backgroundColor: '#121620',
+                            border: '1px solid rgba(255, 255, 255, 0.15)',
+                            color: 'white',
+                            fontSize: '0.85rem',
+                          }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Movie Metadata Fields */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: 14, marginBottom: 14 }}>
+                      <div>
+                        <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: 6 }}>
+                          Movie Title
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={editFormData.title}
+                          onChange={(e) => setEditFormData({ ...editFormData, title: e.target.value })}
+                          style={{ width: '100%', padding: '10px 14px', borderRadius: 8, backgroundColor: '#1a1f2e', color: 'white', border: '1px solid rgba(255,255,255,0.1)' }}
+                        />
+                      </div>
+                      <div>
+                        <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: 6 }}>
+                          Status
+                        </label>
+                        <select
+                          value={editFormData.status}
+                          onChange={(e) => setEditFormData({ ...editFormData, status: e.target.value })}
+                          style={{ width: '100%', padding: '10px 14px', borderRadius: 8, backgroundColor: '#1a1f2e', color: 'white', border: '1px solid rgba(255,255,255,0.1)' }}
+                        >
+                          <option value="now_showing">Now Showing</option>
+                          <option value="upcoming">Upcoming</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: 6 }}>
+                          Release Date
+                        </label>
+                        <input
+                          type="date"
+                          value={editFormData.release_date}
+                          onChange={(e) => setEditFormData({ ...editFormData, release_date: e.target.value })}
+                          style={{ width: '100%', padding: '10px 14px', borderRadius: 8, backgroundColor: '#1a1f2e', color: 'white', border: '1px solid rgba(255,255,255,0.1)' }}
+                        />
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 14, marginBottom: 14 }}>
+                      <div>
+                        <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: 6 }}>
+                          Rating (1-10)
+                        </label>
+                        <input
+                          type="number"
+                          step="0.1"
+                          min="0"
+                          max="10"
+                          value={editFormData.rating}
+                          onChange={(e) => setEditFormData({ ...editFormData, rating: e.target.value })}
+                          style={{ width: '100%', padding: '10px 14px', borderRadius: 8, backgroundColor: '#1a1f2e', color: 'white', border: '1px solid rgba(255,255,255,0.1)' }}
+                        />
+                      </div>
+                      <div>
+                        <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: 6 }}>
+                          Votes Count
+                        </label>
+                        <input
+                          type="number"
+                          value={editFormData.votes}
+                          onChange={(e) => setEditFormData({ ...editFormData, votes: e.target.value })}
+                          style={{ width: '100%', padding: '10px 14px', borderRadius: 8, backgroundColor: '#1a1f2e', color: 'white', border: '1px solid rgba(255,255,255,0.1)' }}
+                        />
+                      </div>
+                      <div>
+                        <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: 6 }}>
+                          Duration (Mins)
+                        </label>
+                        <input
+                          type="number"
+                          value={editFormData.duration_min}
+                          onChange={(e) => setEditFormData({ ...editFormData, duration_min: e.target.value })}
+                          style={{ width: '100%', padding: '10px 14px', borderRadius: 8, backgroundColor: '#1a1f2e', color: 'white', border: '1px solid rgba(255,255,255,0.1)' }}
+                        />
+                      </div>
+                      <div>
+                        <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: 6 }}>
+                          Certification
+                        </label>
+                        <select
+                          value={editFormData.certification}
+                          onChange={(e) => setEditFormData({ ...editFormData, certification: e.target.value })}
+                          style={{ width: '100%', padding: '10px 14px', borderRadius: 8, backgroundColor: '#1a1f2e', color: 'white', border: '1px solid rgba(255,255,255,0.1)' }}
+                        >
+                          <option value="U">U</option>
+                          <option value="UA">UA</option>
+                          <option value="A">A</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 14 }}>
+                      <div>
+                        <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: 6 }}>
+                          Genre(s)
+                        </label>
+                        <input
+                          type="text"
+                          value={editFormData.genre}
+                          onChange={(e) => setEditFormData({ ...editFormData, genre: e.target.value })}
+                          placeholder="Action, Sci-Fi"
+                          style={{ width: '100%', padding: '10px 14px', borderRadius: 8, backgroundColor: '#1a1f2e', color: 'white', border: '1px solid rgba(255,255,255,0.1)' }}
+                        />
+                      </div>
+                      <div>
+                        <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: 6 }}>
+                          Language(s)
+                        </label>
+                        <input
+                          type="text"
+                          value={editFormData.language}
+                          onChange={(e) => setEditFormData({ ...editFormData, language: e.target.value })}
+                          placeholder="Hindi, English, Telugu"
+                          style={{ width: '100%', padding: '10px 14px', borderRadius: 8, backgroundColor: '#1a1f2e', color: 'white', border: '1px solid rgba(255,255,255,0.1)' }}
+                        />
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 14 }}>
+                      <div>
+                        <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: 6 }}>
+                          Director
+                        </label>
+                        <input
+                          type="text"
+                          value={editFormData.director}
+                          onChange={(e) => setEditFormData({ ...editFormData, director: e.target.value })}
+                          placeholder="Director Name"
+                          style={{ width: '100%', padding: '10px 14px', borderRadius: 8, backgroundColor: '#1a1f2e', color: 'white', border: '1px solid rgba(255,255,255,0.1)' }}
+                        />
+                      </div>
+                      <div>
+                        <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: 6 }}>
+                          Cast (comma separated)
+                        </label>
+                        <input
+                          type="text"
+                          value={editFormData.cast}
+                          onChange={(e) => setEditFormData({ ...editFormData, cast: e.target.value })}
+                          placeholder="Actor 1, Actor 2"
+                          style={{ width: '100%', padding: '10px 14px', borderRadius: 8, backgroundColor: '#1a1f2e', color: 'white', border: '1px solid rgba(255,255,255,0.1)' }}
+                        />
+                      </div>
+                    </div>
+
+                    <div style={{ marginBottom: 18 }}>
+                      <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: 6 }}>
+                        Story Synopsis / Description
+                      </label>
+                      <textarea
+                        rows={3}
+                        value={editFormData.description}
+                        onChange={(e) => setEditFormData({ ...editFormData, description: e.target.value })}
+                        style={{ width: '100%', padding: '10px 14px', borderRadius: 8, backgroundColor: '#1a1f2e', color: 'white', border: '1px solid rgba(255,255,255,0.1)' }}
+                      />
+                    </div>
+
+                    <div style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
+                      <button
+                        type="submit"
+                        disabled={isUpdating}
+                        style={{
+                          padding: '12px 32px',
+                          backgroundColor: '#10b981',
+                          border: 'none',
+                          borderRadius: 10,
+                          color: 'white',
+                          fontWeight: 800,
+                          fontSize: '0.95rem',
+                          cursor: isUpdating ? 'wait' : 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 8,
+                          boxShadow: '0 4px 14px rgba(16, 185, 129, 0.4)',
+                        }}
+                      >
+                        {isUpdating ? '⏳ Saving to Database...' : '💾 Save & Update Database'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleCancelEdit}
+                        style={{
+                          padding: '12px 24px',
+                          backgroundColor: 'transparent',
+                          border: '1px solid rgba(255, 255, 255, 0.2)',
+                          borderRadius: 10,
+                          color: 'var(--text-secondary)',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                        }}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              ) : null}
+
               {/* Quick Bar */}
               <div
                 style={{
@@ -682,75 +1191,436 @@ export const MovieManagerModal = ({
                 </button>
               </div>
 
-              {/* Movies Table / List */}
+              {/* Movies Table / List with Value Inspector & Edit Buttons */}
               <div
                 style={{
                   display: 'flex',
                   flexDirection: 'column',
-                  gap: 10,
+                  gap: 12,
                 }}
               >
-                {filteredDeleteList.map((movie) => (
-                  <div
-                    key={movie.id}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      backgroundColor: 'rgba(255, 255, 255, 0.03)',
-                      border: '1px solid rgba(255, 255, 255, 0.08)',
-                      borderRadius: '12px',
-                      padding: '12px 18px',
-                      gap: 16,
-                    }}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                      <img
-                        src={movie.poster_url}
-                        alt={movie.title}
-                        style={{
-                          width: 44,
-                          height: 60,
-                          objectFit: 'cover',
-                          borderRadius: '6px',
-                        }}
-                      />
-                      <div>
-                        <div style={{ fontWeight: 800, fontSize: '1rem', color: 'white' }}>
-                          {movie.title}
-                        </div>
-                        <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-                          ⭐ {movie.rating} • {movie.status === 'now_showing' ? 'Now Showing' : 'Upcoming'} • {movie.release_date}
-                        </div>
-                      </div>
-                    </div>
+                {filteredDeleteList.map((movie) => {
+                  const isInspecting = inspectMovieId === movie.id;
+                  const isCurrentEditing = editingMovie && editingMovie.id === movie.id;
 
-                    <button
-                      onClick={() => handleDelete(movie.id, movie.title)}
+                  return (
+                    <div
+                      key={movie.id}
                       style={{
-                        padding: '8px 16px',
-                        backgroundColor: 'rgba(239, 68, 68, 0.15)',
-                        border: '1px solid rgba(239, 68, 68, 0.4)',
-                        color: '#f87171',
-                        borderRadius: '8px',
-                        fontSize: '0.85rem',
-                        fontWeight: 700,
-                        cursor: 'pointer',
+                        backgroundColor: isCurrentEditing ? 'rgba(239, 68, 68, 0.1)' : 'rgba(255, 255, 255, 0.03)',
+                        border: isCurrentEditing ? '1px solid var(--accent-red)' : '1px solid rgba(255, 255, 255, 0.08)',
+                        borderRadius: '14px',
+                        padding: '16px 20px',
                         transition: 'all 0.2s',
                       }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = '#ef4444';
-                        e.currentTarget.style.color = '#ffffff';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.15)';
-                        e.currentTarget.style.color = '#f87171';
-                      }}
                     >
-                      🗑️ Delete Movie
-                    </button>
+                      {/* Top Row: Info + Action Buttons */}
+                      <div
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          gap: 16,
+                          flexWrap: 'wrap',
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 14, flex: '1 1 320px' }}>
+                          <img
+                            src={movie.poster_url}
+                            alt={movie.title}
+                            onError={(e) => {
+                              e.target.src = 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=400';
+                            }}
+                            style={{
+                              width: 50,
+                              height: 72,
+                              objectFit: 'cover',
+                              borderRadius: '8px',
+                              border: '1px solid rgba(255, 255, 255, 0.15)',
+                              flexShrink: 0,
+                            }}
+                          />
+                          <div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                              <span style={{ fontWeight: 800, fontSize: '1.05rem', color: 'white' }}>
+                                {movie.title}
+                              </span>
+                              <span
+                                style={{
+                                  fontSize: '0.72rem',
+                                  padding: '2px 8px',
+                                  borderRadius: 6,
+                                  fontWeight: 700,
+                                  backgroundColor: movie.status === 'now_showing' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(59, 130, 246, 0.2)',
+                                  color: movie.status === 'now_showing' ? '#34d399' : '#60a5fa',
+                                  border: '1px solid ' + (movie.status === 'now_showing' ? 'rgba(16, 185, 129, 0.4)' : 'rgba(59, 130, 246, 0.4)'),
+                                }}
+                              >
+                                {movie.status === 'now_showing' ? 'Now Showing' : 'Upcoming'}
+                              </span>
+                              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                                ID: #{movie.id}
+                              </span>
+                            </div>
+                            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: 4 }}>
+                              ⭐ {movie.rating} ({movie.votes?.toLocaleString() || 0} votes) • 📅 {movie.release_date} • ⏱️ {movie.duration_min}m
+                            </div>
+                            <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: 2 }}>
+                              🎭 {Array.isArray(movie.genre) ? movie.genre.join(', ') : movie.genre || 'N/A'} • 🌐 {Array.isArray(movie.language) ? movie.language.join(', ') : movie.language || 'N/A'}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                          {/* Test Trailer Button */}
+                          <button
+                            type="button"
+                            onClick={() => setPreviewTrailerModal(normalizeTrailerUrl(movie.trailer_url))}
+                            disabled={!movie.trailer_url}
+                            style={{
+                              padding: '8px 14px',
+                              backgroundColor: movie.trailer_url ? 'rgba(239, 68, 68, 0.15)' : 'rgba(255, 255, 255, 0.05)',
+                              border: '1px solid ' + (movie.trailer_url ? 'rgba(239, 68, 68, 0.4)' : 'rgba(255, 255, 255, 0.1)'),
+                              color: movie.trailer_url ? '#fca5a5' : 'var(--text-muted)',
+                              borderRadius: '8px',
+                              fontSize: '0.82rem',
+                              fontWeight: 700,
+                              cursor: movie.trailer_url ? 'pointer' : 'not-allowed',
+                            }}
+                          >
+                            ▶️ Trailer
+                          </button>
+
+                          {/* Toggle Inspector */}
+                          <button
+                            type="button"
+                            onClick={() => setInspectMovieId(isInspecting ? null : movie.id)}
+                            style={{
+                              padding: '8px 14px',
+                              backgroundColor: isInspecting ? 'rgba(59, 130, 246, 0.3)' : 'rgba(255, 255, 255, 0.08)',
+                              border: '1px solid ' + (isInspecting ? '#3b82f6' : 'rgba(255, 255, 255, 0.15)'),
+                              color: isInspecting ? '#93c5fd' : 'white',
+                              borderRadius: '8px',
+                              fontSize: '0.82rem',
+                              fontWeight: 700,
+                              cursor: 'pointer',
+                            }}
+                          >
+                            {isInspecting ? '🔼 Hide Values' : '🔍 All Values'}
+                          </button>
+
+                          {/* Edit Button */}
+                          <button
+                            type="button"
+                            onClick={() => handleStartEdit(movie)}
+                            style={{
+                              padding: '8px 16px',
+                              backgroundColor: 'rgba(16, 185, 129, 0.15)',
+                              border: '1px solid #10b981',
+                              color: '#34d399',
+                              borderRadius: '8px',
+                              fontSize: '0.82rem',
+                              fontWeight: 700,
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 6,
+                            }}
+                          >
+                            ✏️ Edit & Fix Links
+                          </button>
+
+                          {/* Delete Button */}
+                          <button
+                            type="button"
+                            onClick={() => handleDelete(movie.id, movie.title)}
+                            style={{
+                              padding: '8px 14px',
+                              backgroundColor: 'rgba(239, 68, 68, 0.15)',
+                              border: '1px solid rgba(239, 68, 68, 0.4)',
+                              color: '#f87171',
+                              borderRadius: '8px',
+                              fontSize: '0.82rem',
+                              fontWeight: 700,
+                              cursor: 'pointer',
+                              transition: 'all 0.2s',
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.backgroundColor = '#ef4444';
+                              e.currentTarget.style.color = '#ffffff';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.15)';
+                              e.currentTarget.style.color = '#f87171';
+                            }}
+                          >
+                            🗑️ Delete
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Compact Links Summary Strip */}
+                      <div
+                        style={{
+                          marginTop: 10,
+                          padding: '8px 12px',
+                          backgroundColor: 'rgba(0, 0, 0, 0.25)',
+                          borderRadius: 8,
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 16,
+                          fontSize: '0.76rem',
+                          flexWrap: 'wrap',
+                        }}
+                      >
+                        <div style={{ flex: '1 1 200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          <span style={{ color: 'var(--text-muted)' }}>🖼️ Poster: </span>
+                          <span style={{ color: '#93c5fd' }}>{movie.poster_url || 'None'}</span>
+                        </div>
+                        <div style={{ flex: '1 1 200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          <span style={{ color: 'var(--text-muted)' }}>🎬 Trailer: </span>
+                          <span style={{ color: '#fca5a5' }}>{movie.trailer_url || 'None'}</span>
+                        </div>
+                      </div>
+
+                      {/* Expandable Value Inspector Drawer */}
+                      {isInspecting && (
+                        <div
+                          style={{
+                            marginTop: 14,
+                            padding: 16,
+                            backgroundColor: 'rgba(0, 0, 0, 0.45)',
+                            border: '1px solid rgba(255, 255, 255, 0.1)',
+                            borderRadius: 10,
+                          }}
+                        >
+                          <div style={{ fontWeight: 800, fontSize: '0.88rem', color: '#60a5fa', marginBottom: 12 }}>
+                            📋 Complete Movie Values Inspector (#{movie.id} — {movie.title})
+                          </div>
+
+                          <div
+                            style={{
+                              display: 'grid',
+                              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                              gap: 12,
+                              fontSize: '0.8rem',
+                              marginBottom: 12,
+                            }}
+                          >
+                            <div>
+                              <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: '0.72rem' }}>DIRECTOR</span>
+                              <span style={{ color: 'white', fontWeight: 600 }}>{movie.director || 'Not Specified'}</span>
+                            </div>
+                            <div>
+                              <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: '0.72rem' }}>CERTIFICATION</span>
+                              <span style={{ color: 'white', fontWeight: 600 }}>{movie.certification || 'UA'}</span>
+                            </div>
+                            <div>
+                              <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: '0.72rem' }}>DURATION</span>
+                              <span style={{ color: 'white', fontWeight: 600 }}>{movie.duration_min} minutes</span>
+                            </div>
+                            <div>
+                              <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: '0.72rem' }}>RELEASE DATE</span>
+                              <span style={{ color: 'white', fontWeight: 600 }}>{movie.release_date}</span>
+                            </div>
+                            <div>
+                              <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: '0.72rem' }}>STATUS</span>
+                              <span style={{ color: 'white', fontWeight: 600 }}>{movie.status}</span>
+                            </div>
+                            <div>
+                              <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: '0.72rem' }}>RATING & VOTES</span>
+                              <span style={{ color: 'white', fontWeight: 600 }}>{movie.rating} / 10 ({movie.votes} votes)</span>
+                            </div>
+                          </div>
+
+                          <div style={{ fontSize: '0.8rem', marginBottom: 10 }}>
+                            <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: '0.72rem' }}>CAST</span>
+                            <span style={{ color: 'white' }}>
+                              {Array.isArray(movie.cast)
+                                ? movie.cast.map((c) => (typeof c === 'object' ? c.name : c)).join(', ')
+                                : movie.cast || 'N/A'}
+                            </span>
+                          </div>
+
+                          <div style={{ fontSize: '0.8rem', marginBottom: 10 }}>
+                            <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: '0.72rem' }}>SYNOPSIS / DESCRIPTION</span>
+                            <span style={{ color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                              {movie.description || 'No description provided.'}
+                            </span>
+                          </div>
+
+                          <div style={{ fontSize: '0.78rem', marginBottom: 10 }}>
+                            <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: '0.72rem' }}>POSTER URL</span>
+                            <a
+                              href={movie.poster_url}
+                              target="_blank"
+                              rel="noreferrer"
+                              style={{ color: '#93c5fd', textDecoration: 'underline', wordBreak: 'break-all' }}
+                            >
+                              {movie.poster_url}
+                            </a>
+                          </div>
+
+                          <div style={{ fontSize: '0.78rem', marginBottom: 10 }}>
+                            <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: '0.72rem' }}>TRAILER URL</span>
+                            <a
+                              href={movie.trailer_url}
+                              target="_blank"
+                              rel="noreferrer"
+                              style={{ color: '#fca5a5', textDecoration: 'underline', wordBreak: 'break-all' }}
+                            >
+                              {movie.trailer_url}
+                            </a>
+                          </div>
+
+                          {movie.backdrop_url && (
+                            <div style={{ fontSize: '0.78rem', marginBottom: 10 }}>
+                              <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: '0.72rem' }}>BACKDROP URL</span>
+                              <span style={{ color: 'var(--text-secondary)', wordBreak: 'break-all' }}>
+                                {movie.backdrop_url}
+                              </span>
+                            </div>
+                          )}
+
+                          <div style={{ marginTop: 12, display: 'flex', gap: 10 }}>
+                            <button
+                              type="button"
+                              onClick={() => handleStartEdit(movie)}
+                              style={{
+                                padding: '6px 14px',
+                                backgroundColor: '#10b981',
+                                border: 'none',
+                                borderRadius: 6,
+                                color: 'white',
+                                fontSize: '0.8rem',
+                                fontWeight: 700,
+                                cursor: 'pointer',
+                              }}
+                            >
+                              ✏️ Edit This Movie Values
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setPreviewTrailerModal(normalizeTrailerUrl(movie.trailer_url))}
+                              disabled={!movie.trailer_url}
+                              style={{
+                                padding: '6px 14px',
+                                backgroundColor: 'rgba(239, 68, 68, 0.2)',
+                                border: '1px solid #ef4444',
+                                borderRadius: 6,
+                                color: '#fca5a5',
+                                fontSize: '0.8rem',
+                                fontWeight: 700,
+                                cursor: movie.trailer_url ? 'pointer' : 'not-allowed',
+                              }}
+                            >
+                              ▶️ Test Trailer
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Floating YouTube Trailer Player Modal */}
+          {previewTrailerModal && (
+            <div
+              style={{
+                position: 'fixed',
+                inset: 0,
+                zIndex: 9999,
+                backgroundColor: 'rgba(0, 0, 0, 0.85)',
+                backdropFilter: 'blur(8px)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '20px',
+              }}
+              onClick={() => setPreviewTrailerModal(null)}
+            >
+              <div
+                style={{
+                  width: '100%',
+                  maxWidth: '800px',
+                  backgroundColor: '#0f1118',
+                  borderRadius: '16px',
+                  border: '1px solid rgba(255, 255, 255, 0.15)',
+                  overflow: 'hidden',
+                  boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.8)',
+                }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '14px 20px',
+                    borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+                  }}
+                >
+                  <div style={{ fontWeight: 800, fontSize: '1rem', color: 'white', display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span>🎬 Trailer Live Verification Player</span>
                   </div>
-                ))}
+                  <button
+                    type="button"
+                    onClick={() => setPreviewTrailerModal(null)}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: 'var(--text-muted)',
+                      fontSize: '1.2rem',
+                      cursor: 'pointer',
+                      padding: 4,
+                    }}
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, backgroundColor: 'black' }}>
+                  <iframe
+                    src={previewTrailerModal}
+                    title="Movie Trailer"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: '100%',
+                      height: '100%',
+                      border: 'none',
+                    }}
+                  />
+                </div>
+
+                <div
+                  style={{
+                    padding: '12px 20px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    fontSize: '0.82rem',
+                    color: 'var(--text-muted)',
+                    backgroundColor: 'rgba(0,0,0,0.4)',
+                  }}
+                >
+                  <span>Link: {previewTrailerModal}</span>
+                  <a
+                    href={previewTrailerModal.replace('/embed/', '/watch?v=')}
+                    target="_blank"
+                    rel="noreferrer"
+                    style={{ color: '#ef4444', fontWeight: 700 }}
+                  >
+                    Open in YouTube ↗
+                  </a>
+                </div>
               </div>
             </div>
           )}
