@@ -2,54 +2,115 @@ const { GoogleGenerativeAI } = require('@google/generative-ai');
 const { Movie, Booking } = require('../models');
 const { Op } = require('sequelize');
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const getGenAI = () => {
+  if (process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY !== 'your_gemini_api_key_here') {
+    return new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+  }
+  return null;
+};
 
 const getMovieContext = async () => {
-  const movies = await Movie.findAll({ where: { status: { [Op.in]: ['now_showing', 'upcoming'] } }, limit: 30 });
-  return movies.map((m) => `"${m.title}" - Genre: ${m.genre?.join(', ')} | Rating: ${m.rating} | Duration: ${m.duration_min}min | Language: ${m.language?.join(', ')} | ${m.description?.slice(0, 150)}`).join('\n');
+  const movies = await Movie.findAll({
+    where: { status: { [Op.in]: ['now_showing', 'upcoming'] } },
+    limit: 20,
+  });
+  return movies;
+};
+
+// Fallback smart rule-based recommender when Gemini API key is not configured
+const generateSmartRecommendation = (movies, query = '', mood = '', genre = '', language = '') => {
+  let filtered = [...movies];
+
+  if (genre) {
+    const gLower = genre.toLowerCase();
+    const matches = filtered.filter((m) =>
+      (m.genre || []).some((g) => g.toLowerCase().includes(gLower))
+    );
+    if (matches.length > 0) filtered = matches;
+  }
+
+  if (language) {
+    const lLower = language.toLowerCase();
+    const matches = filtered.filter((m) =>
+      (m.language || []).some((l) => l.toLowerCase().includes(lLower))
+    );
+    if (matches.length > 0) filtered = matches;
+  }
+
+  const moodWords = mood.toLowerCase();
+  if (moodWords.includes('happy') || moodWords.includes('fun') || moodWords.includes('comedy')) {
+    const comedy = filtered.filter((m) =>
+      (m.genre || []).some((g) => ['Comedy', 'Animation', 'Adventure'].includes(g))
+    );
+    if (comedy.length > 0) filtered = comedy;
+  } else if (moodWords.includes('thrill') || moodWords.includes('action')) {
+    const action = filtered.filter((m) =>
+      (m.genre || []).some((g) => ['Action', 'Thriller', 'Sci-Fi'].includes(g))
+    );
+    if (action.length > 0) filtered = action;
+  }
+
+  // Pick top 2 or 3
+  const picks = filtered.slice(0, 3);
+  if (picks.length === 0 && movies.length > 0) picks.push(movies[0]);
+
+  let text = `🍿 **CineBot's Handpicked Recommendations for you:**\n\n`;
+  picks.forEach((m, idx) => {
+    text += `**${idx + 1}. ${m.title}** (⭐ ${m.rating || '4.5'}/5)\n`;
+    text += `• **Genre:** ${(m.genre || []).join(', ')} | **Lang:** ${(m.language || []).join(', ')}\n`;
+    text += `• **Why it's a match:** ${m.description ? m.description.slice(0, 140) + '...' : 'An absolute crowd favorite packed with brilliant cinematic moments!'}\n\n`;
+  });
+  text += `💡 *Tip: Pair your screening with large Butter Popcorn and an icy drink from our snacks counter!*`;
+  return text;
 };
 
 exports.getRecommendation = async (req, res, next) => {
   try {
     const { query, mood, genre, language } = req.body;
-    if (!query) return res.status(400).json({ success: false, message: 'Query is required' });
+    const movies = await getMovieContext();
 
-    const movieContext = await getMovieContext();
+    const genAI = getGenAI();
+    if (!genAI) {
+      const recommendation = generateSmartRecommendation(movies, query, mood, genre, language);
+      return res.json({ success: true, recommendation, generated_at: new Date().toISOString(), ai_source: 'curated-engine' });
+    }
 
-    // Get user's booking history for personalization
+    const movieContextStr = movies
+      .map(
+        (m) =>
+          `"${m.title}" - Genre: ${(m.genre || []).join(', ')} | Rating: ${m.rating} | Duration: ${m.duration_min}min | Language: ${(m.language || []).join(', ')} | ${m.description?.slice(0, 120)}`
+      )
+      .join('\n');
+
     let userHistory = '';
     if (req.user) {
       const past = await Booking.findAll({ where: { user_id: req.user.id, status: 'confirmed' }, limit: 5 });
       if (past.length > 0) userHistory = `User has previously booked: ${past.length} movies.`;
     }
 
-    const prompt = `You are CineBot, an enthusiastic movie recommendation assistant for CineVerse (an Indian movie ticket booking platform).
+    const prompt = `You are CineBot, an enthusiastic movie recommendation assistant for CineVerse (a premier cinema ticket booking app).
 
-Current movies available:
-${movieContext}
+Available movies:
+${movieContextStr}
 
 ${userHistory}
-
-User request: "${query}"
+User query: "${query || 'recommend a good movie'}"
 ${mood ? `Mood: ${mood}` : ''}
-${genre ? `Preferred genre: ${genre}` : ''}
-${language ? `Preferred language: ${language}` : ''}
+${genre ? `Genre: ${genre}` : ''}
+${language ? `Language: ${language}` : ''}
 
-Give 2-3 personalized movie recommendations. For each:
-1. Movie title (must be from the list above)
-2. Why it matches their request (1-2 sentences)
-3. A fun movie quote or fact
-
-Keep it fun, conversational and enthusiastic! Use emojis. Max 200 words total.`;
+Pick 2-3 top recommendations from the list above. Format clearly with title, rating, reason, and an engaging fun tone with emojis. Max 180 words.`;
 
     const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
     const result = await model.generateContent(prompt);
     const text = result.response.text();
 
-    res.json({ success: true, recommendation: text, generated_at: new Date().toISOString() });
+    res.json({ success: true, recommendation: text, generated_at: new Date().toISOString(), ai_source: 'gemini' });
   } catch (err) {
     console.error('Gemini error:', err.message);
-    res.json({ success: true, recommendation: "🎬 Sorry, I'm having a brain freeze! Try refreshing or ask me again. Our top picks right now are based on ratings and popularity - check the Now Showing section!" });
+    const movies = await getMovieContext();
+    const recommendation = generateSmartRecommendation(movies, req.body?.query, req.body?.mood, req.body?.genre, req.body?.language);
+    res.json({ success: true, recommendation, fallback: true });
   }
 };
 
@@ -58,24 +119,39 @@ exports.chat = async (req, res, next) => {
     const { message, history = [] } = req.body;
     if (!message) return res.status(400).json({ success: false, message: 'message is required' });
 
-    const movieContext = await getMovieContext();
+    const movies = await getMovieContext();
+    const genAI = getGenAI();
+
+    if (!genAI) {
+      // Smart conversational fallback
+      const lower = message.toLowerCase();
+      let reply = `🎬 **CineBot here!** `;
+      if (lower.includes('recommend') || lower.includes('watch') || lower.includes('suggest')) {
+        const top = movies[0];
+        reply += `I strongly recommend checking out **${top ? top.title : 'our latest blockbuster'}**! It's trending with high ratings. Would you like action, comedy, or drama?`;
+      } else if (lower.includes('ticket') || lower.includes('book') || lower.includes('seat')) {
+        reply += `Booking is easy! Simply click on any movie card, pick your preferred showtime and cinema, select your seats on the interactive map, and grab some popcorn!`;
+      } else if (lower.includes('popcorn') || lower.includes('snack') || lower.includes('food')) {
+        reply += `Our snacks menu features Caramel Popcorn, Cheesy Nachos, Coke, and gourmet Combos! You can add them during seat booking.`;
+      } else if (lower.includes('game') || lower.includes('bored')) {
+        reply += `Check out our mini-game section in the navbar where you can play Popcorn Catch or Movie Trivia while you wait for your show! 🎮`;
+      } else {
+        reply += `I'm happy to help you with movie suggestions, showtimes, seats, and snack orders. What movie are you in the mood for today? 🍿`;
+      }
+      return res.json({ success: true, reply, timestamp: new Date().toISOString() });
+    }
+
+    const movieContextStr = movies
+      .map((m) => `"${m.title}" (${(m.genre || []).join(', ')})`)
+      .join(', ');
+
     const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-
-    const systemPrompt = `You are CineBot, CineVerse's friendly AI assistant for an Indian movie ticket booking app. You help users:
-- Find and recommend movies
-- Explain booking process (seat selection, payment with Stripe)
-- Answer movie trivia
-- Suggest food/beverage pairings
-
-Currently showing movies:
-${movieContext}
-
-Keep answers short (max 100 words), friendly and use emojis. Don't make up movies not in the list.`;
+    const systemPrompt = `You are CineBot, CineVerse's friendly cinema AI assistant. Currently showing: ${movieContextStr}. Answer helpfully, suggest movies, explain bookings, and keep answers concise (max 90 words) with emojis.`;
 
     const chat = model.startChat({
       history: [
         { role: 'user', parts: [{ text: systemPrompt }] },
-        { role: 'model', parts: [{ text: "🎬 Hi! I'm CineBot! Ready to help you pick the perfect movie or guide your booking. What can I do for you?" }] },
+        { role: 'model', parts: [{ text: "🎬 Hey there! I'm CineBot, your movie expert. How can I help you today?" }] },
         ...history.map((h) => ({ role: h.role, parts: [{ text: h.content }] })),
       ],
     });
@@ -86,6 +162,9 @@ Keep answers short (max 100 words), friendly and use emojis. Don't make up movie
     res.json({ success: true, reply, timestamp: new Date().toISOString() });
   } catch (err) {
     console.error('Gemini chat error:', err.message);
-    res.json({ success: true, reply: "🤖 I'm having a moment! Please try again. In the meantime, check our trending movies section!" });
+    res.json({
+      success: true,
+      reply: "🍿 I'm here! Check out our Now Showing movies, or ask me for top action, comedy, or thriller picks!",
+    });
   }
 };
