@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { StarIcon, PlayIcon, TicketIcon } from './Icons';
+import { getMovieBookingAvailability } from '../models';
 
 export const HeroBanner = ({
   movies = [],
@@ -24,6 +25,7 @@ export const HeroBanner = ({
 
   if (!featured.length) return null;
   const current = featured[currentIndex] || featured[0];
+  const availability = getMovieBookingAvailability(current);
 
   const handlePrev = (e) => {
     e.stopPropagation();
@@ -217,8 +219,13 @@ export const HeroBanner = ({
 
             <span
               style={{
-                backgroundColor: current.status === 'now_showing' ? 'var(--accent-red)' : '#8b5cf6',
-                color: 'white',
+                backgroundColor:
+                  availability.type === 'NOW_SHOWING'
+                    ? 'var(--accent-red)'
+                    : availability.type === 'ADVANCE_BOOKING'
+                    ? '#f59e0b'
+                    : '#3b82f6',
+                color: availability.type === 'ADVANCE_BOOKING' ? '#000000' : 'white',
                 padding: '4px 12px',
                 borderRadius: '8px',
                 fontSize: '0.75rem',
@@ -227,7 +234,11 @@ export const HeroBanner = ({
                 textTransform: 'uppercase',
               }}
             >
-              {current.status === 'now_showing' ? '🔥 2026 NOW SHOWING' : '📅 2026 UPCOMING RELEASE'}
+              {availability.type === 'NOW_SHOWING'
+                ? '🔥 2026 NOW SHOWING'
+                : availability.type === 'ADVANCE_BOOKING'
+                ? `⚡ ADVANCE BOOKING OPEN (${current.release_date})`
+                : `📅 RELEASING ${current.release_date || 'SOON'}`}
             </span>
 
             <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
@@ -303,46 +314,161 @@ export const HeroBanner = ({
 
           {/* Action Buttons */}
           <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', alignItems: 'center' }}>
-            <button
-              onClick={() => {
-                if (onSelectMovie) onSelectMovie(current);
-                else onBookMovie(current);
-              }}
-              className="btn btn-primary"
-              style={{
-                padding: '12px 28px',
-                fontSize: '1rem',
-                fontWeight: 800,
-                borderRadius: '12px',
-                boxShadow: '0 10px 25px rgba(229, 9, 20, 0.4)',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 8,
-              }}
-            >
-              <TicketIcon size={20} />
-              Book Tickets & Details
-            </button>
+            {availability.type === 'TRAILER_ONLY' ? (
+              <>
+                {/* Watch Trailer is primary for far upcoming movies */}
+                <button
+                  onClick={() => onWatchTrailer(current)}
+                  className="btn btn-primary"
+                  style={{
+                    padding: '12px 28px',
+                    fontSize: '1rem',
+                    fontWeight: 800,
+                    borderRadius: '12px',
+                    boxShadow: '0 10px 25px rgba(229, 9, 20, 0.4)',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 8,
+                  }}
+                >
+                  <PlayIcon size={20} fill="#ffffff" />
+                  Watch Official Trailer
+                </button>
 
-            <button
-              onClick={() => onWatchTrailer(current)}
-              className="btn btn-secondary"
-              style={{
-                padding: '12px 24px',
-                fontSize: '1rem',
-                fontWeight: 700,
-                borderRadius: '12px',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 8,
-                backgroundColor: 'rgba(255, 255, 255, 0.12)',
-                border: '1px solid rgba(255, 255, 255, 0.2)',
-                color: 'white',
-              }}
-            >
-              <PlayIcon size={18} />
-              Watch Trailer
-            </button>
+                <button
+                  onClick={() => {
+                    if (onSelectMovie) onSelectMovie(current);
+                  }}
+                  className="btn btn-secondary"
+                  style={{
+                    padding: '12px 24px',
+                    fontSize: '1rem',
+                    fontWeight: 700,
+                    borderRadius: '12px',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    color: 'white',
+                  }}
+                >
+                  View Details & Story
+                </button>
+
+                <span style={{ fontSize: '0.82rem', color: '#93c5fd', fontWeight: 600 }}>
+                  🔒 Advance booking opens ~5 days prior to {current.release_date}
+                </span>
+              </>
+            ) : availability.type === 'ADVANCE_BOOKING' ? (
+              <>
+                {/* Advance Booking open for nearby upcoming release */}
+                <button
+                  onClick={() => {
+                    if (onBookMovie) onBookMovie(current, { isAdvanceBooking: true, releaseDate: current.release_date });
+                  }}
+                  className="btn btn-primary"
+                  style={{
+                    padding: '12px 28px',
+                    fontSize: '1rem',
+                    fontWeight: 800,
+                    borderRadius: '12px',
+                    backgroundColor: '#f59e0b',
+                    borderColor: '#d97706',
+                    color: '#000000',
+                    boxShadow: '0 10px 25px rgba(245, 158, 11, 0.4)',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 8,
+                  }}
+                >
+                  <TicketIcon size={20} />
+                  ⚡ Pre-Book Tickets (Premiere)
+                </button>
+
+                <button
+                  onClick={() => onWatchTrailer(current)}
+                  className="btn btn-secondary"
+                  style={{
+                    padding: '12px 24px',
+                    fontSize: '1rem',
+                    fontWeight: 700,
+                    borderRadius: '12px',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    color: 'white',
+                  }}
+                >
+                  <PlayIcon size={18} />
+                  Watch Trailer
+                </button>
+
+                <button
+                  onClick={() => {
+                    if (onSelectMovie) onSelectMovie(current);
+                  }}
+                  className="btn btn-secondary"
+                  style={{
+                    padding: '12px 20px',
+                    fontSize: '0.9rem',
+                    fontWeight: 600,
+                    borderRadius: '12px',
+                    backgroundColor: 'transparent',
+                    border: '1px solid rgba(255, 255, 255, 0.15)',
+                    color: 'rgba(255, 255, 255, 0.8)',
+                  }}
+                >
+                  Details
+                </button>
+              </>
+            ) : (
+              <>
+                {/* Standard Now Showing Booking */}
+                <button
+                  onClick={() => {
+                    if (onSelectMovie) onSelectMovie(current);
+                    else onBookMovie(current);
+                  }}
+                  className="btn btn-primary"
+                  style={{
+                    padding: '12px 28px',
+                    fontSize: '1rem',
+                    fontWeight: 800,
+                    borderRadius: '12px',
+                    boxShadow: '0 10px 25px rgba(229, 9, 20, 0.4)',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 8,
+                  }}
+                >
+                  <TicketIcon size={20} />
+                  Book Tickets
+                </button>
+
+                <button
+                  onClick={() => onWatchTrailer(current)}
+                  className="btn btn-secondary"
+                  style={{
+                    padding: '12px 24px',
+                    fontSize: '1rem',
+                    fontWeight: 700,
+                    borderRadius: '12px',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    color: 'white',
+                  }}
+                >
+                  <PlayIcon size={18} />
+                  Watch Trailer
+                </button>
+              </>
+            )}
 
             {onDeleteMovie && (
               <button

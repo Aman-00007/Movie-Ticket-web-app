@@ -7,6 +7,7 @@ import {
   SparklesIcon,
   CheckIcon,
 } from '../components/Icons';
+import { getMovieBookingAvailability } from '../models';
 
 export const MovieDetailPageView = ({
   movie,
@@ -19,17 +20,49 @@ export const MovieDetailPageView = ({
   locating,
   onDetectLocation,
 }) => {
-  const [selectedDate, setSelectedDate] = useState('today');
   const [selectedFilterFormat, setSelectedFilterFormat] = useState('ALL');
 
   if (!movie) return null;
 
-  const dates = [
-    { id: 'today', label: 'Today', sub: '14 Oct' },
-    { id: 'tomorrow', label: 'Tomorrow', sub: '15 Oct' },
-    { id: 'day3', label: 'Thursday', sub: '16 Oct' },
-    { id: 'day4', label: 'Friday', sub: '17 Oct' },
-  ];
+  const availability = getMovieBookingAvailability(movie);
+  const isAdvance = availability.type === 'ADVANCE_BOOKING';
+  const isTrailerOnly = availability.type === 'TRAILER_ONLY';
+
+  // Compute 4 dynamic dates based on whether movie is now showing or advance booking
+  const generateDates = () => {
+    let startDate = new Date();
+    if (isAdvance && movie.release_date) {
+      const parts = String(movie.release_date).split('-');
+      if (parts.length === 3) {
+        startDate = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+      } else {
+        startDate = new Date(movie.release_date);
+      }
+    }
+    const daysArr = [];
+    for (let i = 0; i < 4; i++) {
+      const d = new Date(startDate);
+      d.setDate(startDate.getDate() + i);
+      const label = i === 0 
+        ? (isAdvance ? 'Premiere' : 'Today') 
+        : i === 1 
+        ? (isAdvance ? 'Day 2' : 'Tomorrow') 
+        : d.toLocaleDateString('en-US', { weekday: 'short' });
+      const sub = d.toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
+      const fullLabel = `${label}, ${sub}`;
+      daysArr.push({
+        id: `date-${i}`,
+        label,
+        sub,
+        fullLabel,
+        isPremiere: isAdvance && i === 0,
+      });
+    }
+    return daysArr;
+  };
+
+  const dates = generateDates();
+  const [selectedDate, setSelectedDate] = useState(dates[0].id);
 
   const formats = ['ALL', 'IMAX 3D', '4DX', 'Dolby Atmos', '2D'];
 
@@ -164,15 +197,36 @@ export const MovieDetailPageView = ({
               </span>
               <span
                 style={{
-                  padding: '3px 10px',
+                  padding: '4px 12px',
                   borderRadius: 6,
                   fontSize: '0.75rem',
-                  fontWeight: 700,
-                  backgroundColor: 'rgba(255,255,255,0.1)',
-                  color: 'white',
+                  fontWeight: 800,
+                  backgroundColor:
+                    availability.type === 'NOW_SHOWING'
+                      ? 'rgba(239, 68, 68, 0.25)'
+                      : availability.type === 'ADVANCE_BOOKING'
+                      ? 'rgba(245, 158, 11, 0.25)'
+                      : 'rgba(59, 130, 246, 0.25)',
+                  color:
+                    availability.type === 'NOW_SHOWING'
+                      ? '#ef4444'
+                      : availability.type === 'ADVANCE_BOOKING'
+                      ? '#f59e0b'
+                      : '#60a5fa',
+                  border: `1px solid ${
+                    availability.type === 'NOW_SHOWING'
+                      ? 'rgba(239, 68, 68, 0.4)'
+                      : availability.type === 'ADVANCE_BOOKING'
+                      ? 'rgba(245, 158, 11, 0.4)'
+                      : 'rgba(59, 130, 246, 0.4)'
+                  }`,
                 }}
               >
-                {movie.status === 'now_showing' ? '🟢 IN THEATRES NOW' : '📅 ADVANCE BOOKINGS'}
+                {availability.type === 'NOW_SHOWING'
+                  ? '🟢 IN THEATRES NOW'
+                  : availability.type === 'ADVANCE_BOOKING'
+                  ? `⚡ ADVANCE BOOKING LIVE (${movie.release_date})`
+                  : `📅 RELEASING ON ${movie.release_date || 'SOON'}`}
               </span>
             </div>
 
@@ -219,31 +273,108 @@ export const MovieDetailPageView = ({
 
             {/* Quick Actions */}
             <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', alignItems: 'center' }}>
-              <button
-                onClick={() => {
-                  const el = document.getElementById('cinemas-booking-section');
-                  if (el) el.scrollIntoView({ behavior: 'smooth' });
-                }}
-                className="btn btn-primary"
-                style={{
-                  padding: '14px 28px',
-                  fontSize: '1rem',
-                  fontWeight: 800,
-                  boxShadow: '0 8px 25px rgba(229, 9, 20, 0.4)',
-                }}
-              >
-                <TicketIcon size={20} />
-                Book Tickets Now
-              </button>
+              {isTrailerOnly ? (
+                <>
+                  <button
+                    onClick={() => onWatchTrailer(movie)}
+                    className="btn btn-primary"
+                    style={{
+                      padding: '14px 28px',
+                      fontSize: '1rem',
+                      fontWeight: 800,
+                      boxShadow: '0 8px 25px rgba(229, 9, 20, 0.4)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 8,
+                    }}
+                  >
+                    <PlayIcon size={20} fill="#ffffff" />
+                    Play Official Trailer
+                  </button>
 
-              <button
-                onClick={() => onWatchTrailer(movie)}
-                className="btn btn-secondary"
-                style={{ padding: '14px 24px', fontSize: '0.95rem', fontWeight: 700 }}
-              >
-                <PlayIcon size={18} />
-                Play Official Trailer
-              </button>
+                  <div
+                    style={{
+                      padding: '12px 18px',
+                      borderRadius: 'var(--radius-md)',
+                      backgroundColor: 'rgba(59, 130, 246, 0.12)',
+                      border: '1px solid rgba(59, 130, 246, 0.3)',
+                      color: '#93c5fd',
+                      fontSize: '0.85rem',
+                      fontWeight: 600,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 8,
+                    }}
+                  >
+                    🔒 Advance bookings open ~5 days before {movie.release_date}
+                  </div>
+                </>
+              ) : isAdvance ? (
+                <>
+                  <button
+                    onClick={() => {
+                      const el = document.getElementById('cinemas-booking-section');
+                      if (el) el.scrollIntoView({ behavior: 'smooth' });
+                    }}
+                    className="btn btn-primary"
+                    style={{
+                      padding: '14px 28px',
+                      fontSize: '1rem',
+                      fontWeight: 800,
+                      backgroundColor: '#f59e0b',
+                      borderColor: '#d97706',
+                      color: '#000000',
+                      boxShadow: '0 8px 25px rgba(245, 158, 11, 0.4)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 8,
+                    }}
+                  >
+                    <TicketIcon size={20} />
+                    ⚡ Advance Booking (Premiere Week)
+                  </button>
+
+                  <button
+                    onClick={() => onWatchTrailer(movie)}
+                    className="btn btn-secondary"
+                    style={{ padding: '14px 24px', fontSize: '0.95rem', fontWeight: 700 }}
+                  >
+                    <PlayIcon size={18} />
+                    Play Official Trailer
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={() => {
+                      const el = document.getElementById('cinemas-booking-section');
+                      if (el) el.scrollIntoView({ behavior: 'smooth' });
+                    }}
+                    className="btn btn-primary"
+                    style={{
+                      padding: '14px 28px',
+                      fontSize: '1rem',
+                      fontWeight: 800,
+                      boxShadow: '0 8px 25px rgba(229, 9, 20, 0.4)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 8,
+                    }}
+                  >
+                    <TicketIcon size={20} />
+                    Book Tickets Now
+                  </button>
+
+                  <button
+                    onClick={() => onWatchTrailer(movie)}
+                    className="btn btn-secondary"
+                    style={{ padding: '14px 24px', fontSize: '0.95rem', fontWeight: 700 }}
+                  >
+                    <PlayIcon size={18} />
+                    Play Official Trailer
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -350,253 +481,358 @@ export const MovieDetailPageView = ({
               border: '1px solid var(--border-subtle)',
             }}
           >
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                flexWrap: 'wrap',
-                gap: 16,
-                marginBottom: 20,
-              }}
-            >
-              <div>
-                <h2 style={{ fontSize: '1.4rem', fontWeight: 800, marginBottom: 4 }}>
-                  Select Cinema & Showtimes
-                </h2>
-                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                  Showing in {selectedCity} • Real-time seat allocation
-                </p>
-              </div>
-
-              {/* Location Tracker Button */}
-              <button
-                onClick={onDetectLocation}
-                disabled={locating}
-                className="btn btn-secondary"
+            {isTrailerOnly ? (
+              <div
                 style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 8,
-                  padding: '8px 16px',
-                  fontSize: '0.85rem',
-                  borderColor: userLocation?.detected ? '#10b981' : 'var(--border-subtle)',
-                  color: userLocation?.detected ? '#10b981' : 'var(--text-primary)',
+                  textAlign: 'center',
+                  padding: '44px 24px',
+                  backgroundColor: 'rgba(15, 23, 42, 0.65)',
+                  border: '1.5px dashed rgba(59, 130, 246, 0.4)',
+                  borderRadius: 'var(--radius-md)',
+                  boxShadow: '0 10px 30px rgba(0, 0, 0, 0.4)',
                 }}
               >
-                <MapPinIcon size={16} />
-                {locating
-                  ? 'Finding Nearest...'
-                  : userLocation?.detected
-                  ? '📍 GPS Proximity Active'
-                  : '📍 Find Nearest Cinema via GPS'}
-              </button>
-            </div>
-
-            {/* Date Tabs */}
-            <div
-              style={{
-                display: 'flex',
-                gap: 12,
-                overflowX: 'auto',
-                paddingBottom: 8,
-                marginBottom: 20,
-                borderBottom: '1px solid var(--border-subtle)',
-              }}
-            >
-              {dates.map((d) => (
-                <button
-                  key={d.id}
-                  onClick={() => setSelectedDate(d.id)}
+                <div style={{ fontSize: '3.2rem', marginBottom: 12 }}>🎬</div>
+                <span
                   style={{
-                    padding: '8px 18px',
-                    borderRadius: 'var(--radius-md)',
-                    border: '1px solid',
-                    borderColor: selectedDate === d.id ? 'var(--accent-red)' : 'var(--border-subtle)',
-                    backgroundColor:
-                      selectedDate === d.id ? 'var(--accent-red)' : 'var(--bg-secondary)',
-                    color: 'white',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    minWidth: 90,
-                    transition: 'all 0.2s',
-                  }}
-                >
-                  <span style={{ fontSize: '0.75rem', opacity: 0.8 }}>{d.label}</span>
-                  <span style={{ fontSize: '0.95rem', fontWeight: 800 }}>{d.sub}</span>
-                </button>
-              ))}
-            </div>
-
-            {/* Format Filter Pills */}
-            <div style={{ display: 'flex', gap: 8, marginBottom: 24, flexWrap: 'wrap' }}>
-              {formats.map((f) => (
-                <button
-                  key={f}
-                  onClick={() => setSelectedFilterFormat(f)}
-                  style={{
-                    padding: '4px 12px',
+                    display: 'inline-block',
+                    padding: '5px 14px',
                     borderRadius: 20,
-                    border: '1px solid',
-                    borderColor:
-                      selectedFilterFormat === f ? 'var(--accent-red)' : 'var(--border-subtle)',
-                    backgroundColor:
-                      selectedFilterFormat === f ? 'rgba(229, 9, 20, 0.15)' : 'transparent',
-                    color: selectedFilterFormat === f ? 'var(--accent-red)' : 'var(--text-secondary)',
-                    fontSize: '0.75rem',
-                    fontWeight: 700,
-                    cursor: 'pointer',
+                    backgroundColor: 'rgba(59, 130, 246, 0.15)',
+                    color: '#60a5fa',
+                    border: '1px solid rgba(59, 130, 246, 0.3)',
+                    fontWeight: 800,
+                    fontSize: '0.8rem',
+                    letterSpacing: '0.05em',
+                    marginBottom: 16,
                   }}
                 >
-                  {f}
-                </button>
-              ))}
-            </div>
-
-            {/* List of Theatres & Showtimes */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-              {displayTheatres.map((theatre, index) => {
-                const isNearest = index === 0;
-                return (
+                  🔒 ADVANCE BOOKINGS OPENING SOON
+                </span>
+                <h3 style={{ fontSize: '1.6rem', fontWeight: 900, color: '#ffffff', marginBottom: 10 }}>
+                  {movie.title} Releasing Worldwide on {movie.release_date}
+                </h3>
+                <p
+                  style={{
+                    color: 'var(--text-secondary)',
+                    maxWidth: 620,
+                    margin: '0 auto 26px',
+                    lineHeight: 1.6,
+                    fontSize: '0.95rem',
+                  }}
+                >
+                  Ticket bookings for this theatrical release will officially open{' '}
+                  <strong style={{ color: '#ffffff' }}>5 to 7 days before the premiere date</strong>. Watch the official trailer now or enable release notifications so you don't miss first-day first-show seats!
+                </p>
+                <div style={{ display: 'flex', gap: 14, justifyContent: 'center', flexWrap: 'wrap' }}>
+                  <button
+                    onClick={() => onWatchTrailer(movie)}
+                    className="btn btn-primary"
+                    style={{ padding: '12px 28px', fontSize: '0.95rem', display: 'inline-flex', alignItems: 'center', gap: 8 }}
+                  >
+                    <PlayIcon size={18} fill="#ffffff" />
+                    Watch Official HD Trailer
+                  </button>
+                  <button
+                    onClick={() => {
+                      alert(`🔔 Reminder Registered! We will notify you immediately when advance booking opens for "${movie.title}" in ${selectedCity}.`);
+                    }}
+                    className="btn btn-secondary"
+                    style={{ padding: '12px 22px', fontSize: '0.95rem' }}
+                  >
+                    🔔 Notify Me When Booking Opens
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <>
+                {isAdvance && (
                   <div
-                    key={theatre.id || index}
                     style={{
-                      backgroundColor: 'var(--bg-secondary)',
-                      borderRadius: 'var(--radius-md)',
-                      padding: 20,
-                      border: isNearest
-                        ? '1px solid rgba(229, 9, 20, 0.4)'
-                        : '1px solid var(--border-subtle)',
-                      position: 'relative',
+                      backgroundColor: 'rgba(245, 158, 11, 0.12)',
+                      border: '1px solid rgba(245, 158, 11, 0.35)',
+                      borderRadius: 12,
+                      padding: '14px 20px',
+                      marginBottom: 24,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 14,
+                      color: '#fbbf24',
+                      fontSize: '0.92rem',
+                      fontWeight: 700,
                     }}
                   >
-                    {isNearest && (
-                      <div
-                        style={{
-                          position: 'absolute',
-                          top: -10,
-                          right: 16,
-                          backgroundColor: 'var(--accent-red)',
-                          color: 'white',
-                          padding: '2px 10px',
-                          borderRadius: 20,
-                          fontSize: '0.7rem',
-                          fontWeight: 800,
-                          letterSpacing: '0.5px',
-                        }}
-                      >
-                        ⚡ CLOSEST TO YOUR LOCATION
-                      </div>
-                    )}
-
-                    <div
-                      style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'flex-start',
-                        marginBottom: 12,
-                        flexWrap: 'wrap',
-                        gap: 8,
-                      }}
-                    >
-                      <div>
-                        <h3 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: 4 }}>
-                          {theatre.name}
-                        </h3>
-                        <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                          📍 {theatre.address}
-                        </p>
-                      </div>
-
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <span
-                          className="badge badge-gold"
-                          style={{ fontSize: '0.75rem', padding: '3px 8px' }}
-                        >
-                          🚗 ~{theatre.distance_km} km away
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Amenities */}
-                    <div
-                      style={{
-                        display: 'flex',
-                        gap: 8,
-                        flexWrap: 'wrap',
-                        fontSize: '0.75rem',
-                        color: 'var(--text-secondary)',
-                        marginBottom: 16,
-                      }}
-                    >
-                      {(theatre.amenities || []).map((a, i) => (
-                        <span
-                          key={i}
-                          style={{
-                            backgroundColor: 'rgba(255,255,255,0.05)',
-                            padding: '2px 8px',
-                            borderRadius: 4,
-                          }}
-                        >
-                          ✓ {a}
-                        </span>
-                      ))}
-                    </div>
-
-                    {/* Showtimes Row */}
+                    <span style={{ fontSize: '1.4rem' }}>⚡</span>
                     <div>
-                      <div
-                        style={{
-                          fontSize: '0.75rem',
-                          fontWeight: 700,
-                          color: 'var(--text-muted)',
-                          marginBottom: 8,
-                        }}
-                      >
-                        AVAILABLE SHOWS (CLICK TIME TO PICK SEATS):
-                      </div>
-                      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-                        {(theatre.showtimes || ['10:30 AM', '02:00 PM', '06:30 PM', '10:00 PM']).map(
-                          (time, tIdx) => (
-                            <button
-                              key={tIdx}
-                              onClick={() => {
-                                onBookMovie(movie, { theatre, showtime: time });
-                              }}
-                              className="btn btn-secondary"
-                              style={{
-                                padding: '8px 16px',
-                                fontSize: '0.85rem',
-                                fontWeight: 700,
-                                borderRadius: 8,
-                                borderColor: 'rgba(255,255,255,0.2)',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'center',
-                                transition: 'all 0.15s ease',
-                              }}
-                              onMouseEnter={(e) => {
-                                e.currentTarget.style.borderColor = 'var(--accent-red)';
-                                e.currentTarget.style.backgroundColor = 'rgba(229, 9, 20, 0.1)';
-                              }}
-                              onMouseLeave={(e) => {
-                                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)';
-                                e.currentTarget.style.backgroundColor = 'transparent';
-                              }}
-                            >
-                              <span>{time}</span>
-                              <span style={{ fontSize: '0.65rem', color: '#10b981' }}>Available</span>
-                            </button>
-                          )
-                        )}
-                      </div>
+                      Advance Booking is LIVE for Premiere Dates starting {movie.release_date}!
+                      <span style={{ display: 'block', fontSize: '0.82rem', color: '#fef3c7', fontWeight: 500, marginTop: 2 }}>
+                        Select your preferred premiere date and showtime below to reserve your recliners in advance.
+                      </span>
                     </div>
                   </div>
-                );
-              })}
-            </div>
+                )}
+
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    flexWrap: 'wrap',
+                    gap: 16,
+                    marginBottom: 20,
+                  }}
+                >
+                  <div>
+                    <h2 style={{ fontSize: '1.4rem', fontWeight: 800, marginBottom: 4 }}>
+                      {isAdvance ? 'Select Premiere Date & Showtimes' : 'Select Cinema & Showtimes'}
+                    </h2>
+                    <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                      Showing in {selectedCity} • Real-time seat allocation
+                    </p>
+                  </div>
+
+                  {/* Location Tracker Button */}
+                  <button
+                    onClick={onDetectLocation}
+                    disabled={locating}
+                    className="btn btn-secondary"
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 8,
+                      padding: '8px 16px',
+                      fontSize: '0.85rem',
+                      borderColor: userLocation?.detected ? '#10b981' : 'var(--border-subtle)',
+                      color: userLocation?.detected ? '#10b981' : 'var(--text-primary)',
+                    }}
+                  >
+                    <MapPinIcon size={16} />
+                    {locating
+                      ? 'Finding Nearest...'
+                      : userLocation?.detected
+                      ? '📍 GPS Proximity Active'
+                      : '📍 Find Nearest Cinema via GPS'}
+                  </button>
+                </div>
+
+                {/* Date Tabs */}
+                <div
+                  style={{
+                    display: 'flex',
+                    gap: 12,
+                    overflowX: 'auto',
+                    paddingBottom: 8,
+                    marginBottom: 20,
+                    borderBottom: '1px solid var(--border-subtle)',
+                  }}
+                >
+                  {dates.map((d) => (
+                    <button
+                      key={d.id}
+                      onClick={() => setSelectedDate(d.id)}
+                      style={{
+                        padding: '8px 18px',
+                        borderRadius: 'var(--radius-md)',
+                        border: '1px solid',
+                        borderColor: selectedDate === d.id ? (isAdvance ? '#f59e0b' : 'var(--accent-red)') : 'var(--border-subtle)',
+                        backgroundColor:
+                          selectedDate === d.id ? (isAdvance ? '#f59e0b' : 'var(--accent-red)') : 'var(--bg-secondary)',
+                        color: selectedDate === d.id && isAdvance ? '#000000' : 'white',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        minWidth: 95,
+                        transition: 'all 0.2s',
+                      }}
+                    >
+                      <span style={{ fontSize: '0.72rem', opacity: 0.9, fontWeight: 700 }}>
+                        {d.label} {d.isPremiere && '⭐'}
+                      </span>
+                      <span style={{ fontSize: '0.95rem', fontWeight: 800 }}>{d.sub}</span>
+                    </button>
+                  ))}
+                </div>
+
+                {/* Format Filter Pills */}
+                <div style={{ display: 'flex', gap: 8, marginBottom: 24, flexWrap: 'wrap' }}>
+                  {formats.map((f) => (
+                    <button
+                      key={f}
+                      onClick={() => setSelectedFilterFormat(f)}
+                      style={{
+                        padding: '4px 12px',
+                        borderRadius: 20,
+                        border: '1px solid',
+                        borderColor:
+                          selectedFilterFormat === f ? 'var(--accent-red)' : 'var(--border-subtle)',
+                        backgroundColor:
+                          selectedFilterFormat === f ? 'rgba(229, 9, 20, 0.15)' : 'transparent',
+                        color: selectedFilterFormat === f ? 'var(--accent-red)' : 'var(--text-secondary)',
+                        fontSize: '0.75rem',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                      }}
+                    >
+                      {f}
+                    </button>
+                  ))}
+                </div>
+
+                {/* List of Theatres & Showtimes */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                  {displayTheatres.map((theatre, index) => {
+                    const isNearest = index === 0;
+                    return (
+                      <div
+                        key={theatre.id || index}
+                        style={{
+                          backgroundColor: 'var(--bg-secondary)',
+                          borderRadius: 'var(--radius-md)',
+                          padding: 20,
+                          border: isNearest
+                            ? '1px solid rgba(229, 9, 20, 0.4)'
+                            : '1px solid var(--border-subtle)',
+                          position: 'relative',
+                        }}
+                      >
+                        {isNearest && (
+                          <div
+                            style={{
+                              position: 'absolute',
+                              top: -10,
+                              right: 16,
+                              backgroundColor: 'var(--accent-red)',
+                              color: 'white',
+                              padding: '2px 10px',
+                              borderRadius: 20,
+                              fontSize: '0.7rem',
+                              fontWeight: 800,
+                              letterSpacing: '0.5px',
+                            }}
+                          >
+                            ⚡ CLOSEST TO YOUR LOCATION
+                          </div>
+                        )}
+
+                        <div
+                          style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'flex-start',
+                            marginBottom: 12,
+                            flexWrap: 'wrap',
+                            gap: 8,
+                          }}
+                        >
+                          <div>
+                            <h3 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: 4 }}>
+                              {theatre.name}
+                            </h3>
+                            <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                              📍 {theatre.address}
+                            </p>
+                          </div>
+
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                            <span
+                              className="badge badge-gold"
+                              style={{ fontSize: '0.75rem', padding: '3px 8px' }}
+                            >
+                              🚗 ~{theatre.distance_km} km away
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Amenities */}
+                        <div
+                          style={{
+                            display: 'flex',
+                            gap: 8,
+                            flexWrap: 'wrap',
+                            fontSize: '0.75rem',
+                            color: 'var(--text-secondary)',
+                            marginBottom: 16,
+                          }}
+                        >
+                          {(theatre.amenities || []).map((a, i) => (
+                            <span
+                              key={i}
+                              style={{
+                                backgroundColor: 'rgba(255,255,255,0.05)',
+                                padding: '2px 8px',
+                                borderRadius: 4,
+                              }}
+                            >
+                              ✓ {a}
+                            </span>
+                          ))}
+                        </div>
+
+                        {/* Showtimes Row */}
+                        <div>
+                          <div
+                            style={{
+                              fontSize: '0.75rem',
+                              fontWeight: 700,
+                              color: 'var(--text-muted)',
+                              marginBottom: 8,
+                            }}
+                          >
+                            AVAILABLE SHOWS (CLICK TIME TO PICK SEATS):
+                          </div>
+                          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                            {(theatre.showtimes || ['10:30 AM', '02:00 PM', '06:30 PM', '10:00 PM']).map(
+                              (time, tIdx) => {
+                                const activeDateObj = dates.find((d) => d.id === selectedDate) || dates[0];
+                                return (
+                                  <button
+                                    key={tIdx}
+                                    onClick={() => {
+                                      onBookMovie(movie, {
+                                        theatre,
+                                        showtime: time,
+                                        date: activeDateObj.fullLabel,
+                                        isAdvanceBooking: isAdvance,
+                                      });
+                                    }}
+                                    className="btn btn-secondary"
+                                    style={{
+                                      padding: '8px 16px',
+                                      fontSize: '0.85rem',
+                                      fontWeight: 700,
+                                      borderRadius: 8,
+                                      borderColor: isAdvance ? 'rgba(245, 158, 11, 0.4)' : 'rgba(255,255,255,0.2)',
+                                      display: 'flex',
+                                      flexDirection: 'column',
+                                      alignItems: 'center',
+                                      transition: 'all 0.15s ease',
+                                    }}
+                                    onMouseEnter={(e) => {
+                                      e.currentTarget.style.borderColor = isAdvance ? '#f59e0b' : 'var(--accent-red)';
+                                      e.currentTarget.style.backgroundColor = isAdvance ? 'rgba(245, 158, 11, 0.15)' : 'rgba(229, 9, 20, 0.1)';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                      e.currentTarget.style.borderColor = isAdvance ? 'rgba(245, 158, 11, 0.4)' : 'rgba(255,255,255,0.2)';
+                                      e.currentTarget.style.backgroundColor = 'transparent';
+                                    }}
+                                  >
+                                    <span>{time}</span>
+                                    <span style={{ fontSize: '0.65rem', color: isAdvance ? '#fbbf24' : '#10b981' }}>
+                                      {isAdvance ? 'Advance' : 'Available'}
+                                    </span>
+                                  </button>
+                                );
+                              }
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
+            )}
           </section>
         </div>
 

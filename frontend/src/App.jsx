@@ -18,6 +18,7 @@ import {
   useGameController,
 } from './controllers';
 import { HomeView, AuthModalView, MovieDetailPageView } from './views';
+import { getMovieBookingAvailability } from './models';
 
 export function App() {
   // 1. MVC Movie Controller
@@ -38,8 +39,13 @@ export function App() {
   // Admin check for privileged actions
   const isAdmin = Boolean(authCtrl.user && (authCtrl.user.role === 'admin' || authCtrl.user.role === 'ADMIN'));
 
-  // Authentication check before booking tickets
+  // Authentication and advance booking check before booking tickets
   const handleOpenBooking = (movie, options = null) => {
+    const availability = getMovieBookingAvailability(movie);
+    if (availability.type === 'TRAILER_ONLY') {
+      movieCtrl.openTrailer(movie);
+      return;
+    }
     if (!authCtrl.user) {
       authCtrl.openAuthModal();
       return;
@@ -161,6 +167,7 @@ export function App() {
       {/* Popcorn Catcher Arcade Game Modal */}
       {gameCtrl.gameModalOpen && (
         <MiniGameModal
+          movies={movieCtrl.movies}
           onClose={gameCtrl.closeGameModal}
           onClaimReward={(code) => {
             gameCtrl.handleGameReward(code);

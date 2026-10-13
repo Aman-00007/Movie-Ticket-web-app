@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { XIcon, CheckIcon, MapPinIcon, PopcornIcon, TicketIcon } from './Icons';
 import { api } from '../services/api';
+import { getMovieBookingAvailability } from '../models';
 
 export const BookingModal = ({
   movie,
@@ -11,6 +12,107 @@ export const BookingModal = ({
   onBookingComplete,
   user,
 }) => {
+  const availability = getMovieBookingAvailability(movie);
+  const isAdvance = availability.type === 'ADVANCE_BOOKING';
+
+  // Generate 4 dynamic booking dates:
+  // If Advance Booking, dates start on movie.release_date!
+  // If Now Showing, dates start today.
+  const generateDates = () => {
+    let startDate = new Date();
+    if (isAdvance && movie?.release_date) {
+      const parts = String(movie.release_date).split('-');
+      if (parts.length === 3) {
+        startDate = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+      } else {
+        startDate = new Date(movie.release_date);
+      }
+    }
+    const daysArr = [];
+    for (let i = 0; i < 4; i++) {
+      const d = new Date(startDate);
+      d.setDate(startDate.getDate() + i);
+      const dayName = i === 0
+        ? (isAdvance ? 'Premiere' : 'Today')
+        : i === 1
+          ? (isAdvance ? 'Day 2' : 'Tomorrow')
+          : d.toLocaleDateString('en-US', { weekday: 'short' });
+      const formattedDate = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      const fullString = `${dayName}, ${formattedDate}`;
+      daysArr.push({
+        id: `date-${i}`,
+        dayName,
+        formattedDate,
+        fullString,
+        dateObj: d,
+        isPremiere: isAdvance && i === 0,
+      });
+    }
+    return daysArr;
+  };
+
+  const bookingDates = generateDates();
+  const [selectedDate, setSelectedDate] = useState(
+    initialOptions?.date || bookingDates[0].fullString
+  );
+
+  // Helper to extract cleanly formatted seat strings (e.g. 'J7, J8') even if objects are passed
+  const formatSeatList = (seats) => {
+    if (!seats) return '';
+    if (typeof seats === 'string') {
+      if (seats.includes('[object Object]')) return '';
+      if (seats.startsWith('[') || seats.startsWith('{')) {
+        try {
+          seats = JSON.parse(seats);
+        } catch (e) {
+          return seats;
+        }
+      } else {
+        return seats;
+      }
+    }
+    if (Array.isArray(seats)) {
+      return seats
+        .map((s) => {
+          if (!s) return '';
+          if (typeof s === 'string' || typeof s === 'number') {
+            const str = String(s);
+            return str.includes('[object Object]') ? '' : str;
+          }
+          if (typeof s === 'object') {
+            return (
+              s.id ||
+              s.label ||
+              s.seat_id ||
+              s.seat_no ||
+              (s.row && (s.number || s.seat_number) ? `${s.row}${s.number || s.seat_number}` : '') ||
+              s.number ||
+              s.name ||
+              s.seat ||
+              ''
+            );
+          }
+          return '';
+        })
+        .filter(Boolean)
+        .join(', ');
+    }
+    if (typeof seats === 'object') {
+      return (
+        seats.id ||
+        seats.label ||
+        seats.seat_id ||
+        seats.seat_no ||
+        (seats.row && (seats.number || seats.seat_number) ? `${seats.row}${seats.number || seats.seat_number}` : '') ||
+        seats.number ||
+        seats.name ||
+        seats.seat ||
+        ''
+      );
+    }
+    return String(seats);
+  };
+
   // If theatre and showtime are pre-selected from the movie landing page, start directly at seat selection (Step 2)
   const initialTheatre = initialOptions?.theatre || theatres[0] || null;
   const initialTime =
@@ -155,10 +257,11 @@ export const BookingModal = ({
       theatre_id: selectedTheatre?.id,
       theatre_name: selectedTheatre?.name || 'CineVerse IMAX Palladium',
       show_time: selectedTime,
-      show_date: 'Today, ' + new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+      show_date: selectedDate,
       show_id: selectedTheatre?.show_id || (movie.shows && movie.shows[0]?.id) || undefined,
       seat_ids: selectedSeats.map((s) => s.id),
-      seats: selectedSeats,
+      seats: selectedSeats.map((s) => s.id),
+      seat_details: selectedSeats,
       beverages: Object.values(snackCart).map((i) => ({ name: i.snack.name, quantity: i.qty, qty: i.qty, price: i.snack.price })),
       ticket_price: ticketSubtotal,
       beverage_price: snacksSubtotal,
@@ -184,7 +287,12 @@ export const BookingModal = ({
         }
       }
 
-      setConfirmedBooking(activeBooking);
+      const seatString = selectedSeats.map((s) => s.id).join(', ');
+      setConfirmedBooking({
+        ...activeBooking,
+        displaySeats: seatString,
+        seat_ids: selectedSeats.map((s) => s.id),
+      });
       setStep(5);
       if (onBookingComplete) onBookingComplete(activeBooking);
     } catch (err) {
@@ -238,6 +346,10 @@ export const BookingModal = ({
                 <span>•</span>
                 <span style={{ color: 'var(--accent-cyan)' }}>
                   📍 {selectedTheatre?.name || 'CineVerse IMAX Palladium'}
+                </span>
+                <span>•</span>
+                <span style={{ color: isAdvance ? '#f59e0b' : '#38bdf8', fontWeight: 700 }}>
+                  📅 {selectedDate} {isAdvance && '(Advance)'}
                 </span>
                 <span>•</span>
                 <span style={{ color: '#f59e0b', fontWeight: 700 }}>🕒 {selectedTime}</span>
@@ -312,9 +424,62 @@ export const BookingModal = ({
         {/* ─── STEP 1: Cinema & Showtime Selection ─── */}
         {step === 1 && (
           <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-              <h3 style={{ fontSize: '1.15rem', fontWeight: 800, margin: 0 }}>Select Cinema & Showtime</h3>
-              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Showing in your area</span>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+              <div>
+                <h3 style={{ fontSize: '1.15rem', fontWeight: 800, margin: 0 }}>
+                  {isAdvance ? '⚡ Advance Booking: Premiere Week' : 'Select Cinema & Showtime'}
+                </h3>
+                <span style={{ fontSize: '0.8rem', color: isAdvance ? '#fbbf24' : 'var(--text-muted)' }}>
+                  {isAdvance ? `Advance reservations for premiere on ${movie.release_date}` : 'Showing in your area'}
+                </span>
+              </div>
+              {isAdvance && (
+                <span className="badge badge-gold" style={{ fontSize: '0.75rem', padding: '4px 10px' }}>
+                  ⚡ ADVANCE OPEN
+                </span>
+              )}
+            </div>
+
+            {/* Date Selector Strip */}
+            <div style={{ marginBottom: 20, backgroundColor: 'rgba(255, 255, 255, 0.03)', padding: '14px 16px', borderRadius: 14, border: '1px solid rgba(255, 255, 255, 0.06)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                <label style={{ fontSize: '0.78rem', fontWeight: 800, color: isAdvance ? '#f59e0b' : 'var(--text-muted)', letterSpacing: '0.04em' }}>
+                  {isAdvance ? '⚡ SELECT PREMIERE SHOW DATE:' : '📅 SELECT SHOW DATE:'}
+                </label>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                  Selected: <strong style={{ color: isAdvance ? '#fbbf24' : 'white' }}>{selectedDate}</strong>
+                </span>
+              </div>
+
+              <div style={{ display: 'flex', gap: 10, overflowX: 'auto', paddingBottom: 4 }}>
+                {bookingDates.map((d) => (
+                  <button
+                    key={d.id}
+                    type="button"
+                    onClick={() => setSelectedDate(d.fullString)}
+                    style={{
+                      padding: '8px 16px',
+                      borderRadius: 10,
+                      border: `1.5px solid ${selectedDate === d.fullString ? (isAdvance ? '#f59e0b' : 'var(--accent-red)') : 'rgba(255, 255, 255, 0.1)'}`,
+                      backgroundColor: selectedDate === d.fullString ? (isAdvance ? 'rgba(245, 158, 11, 0.2)' : 'rgba(229, 9, 20, 0.2)') : '#141824',
+                      color: selectedDate === d.fullString && isAdvance ? '#fbbf24' : 'white',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      minWidth: 95,
+                      transition: 'all 0.15s ease',
+                    }}
+                  >
+                    <span style={{ fontSize: '0.72rem', color: selectedDate === d.fullString ? (isAdvance ? '#fbbf24' : '#f87171') : 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase' }}>
+                      {d.dayName} {d.isPremiere && '⭐'}
+                    </span>
+                    <span style={{ fontSize: '0.92rem', fontWeight: 800, marginTop: 2 }}>
+                      {d.formattedDate}
+                    </span>
+                  </button>
+                ))}
+              </div>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -493,14 +658,14 @@ export const BookingModal = ({
                                   backgroundColor: isBooked
                                     ? '#1c202d'
                                     : isSelected
-                                    ? 'var(--accent-red)'
-                                    : '#121622',
+                                      ? 'var(--accent-red)'
+                                      : '#121622',
                                   color: isBooked ? '#4b5563' : isSelected ? 'white' : '#9ca3af',
                                   border: isSelected
                                     ? '1.5px solid #ff4d58'
                                     : isBooked
-                                    ? '1px solid #1c202d'
-                                    : `1px solid ${tier.color}45`,
+                                      ? '1px solid #1c202d'
+                                      : `1px solid ${tier.color}45`,
                                   boxShadow: isSelected ? '0 0 10px rgba(229, 9, 20, 0.7)' : 'none',
                                   transition: 'all 0.15s ease',
                                 }}
@@ -537,14 +702,14 @@ export const BookingModal = ({
                                   backgroundColor: isBooked
                                     ? '#1c202d'
                                     : isSelected
-                                    ? 'var(--accent-red)'
-                                    : '#121622',
+                                      ? 'var(--accent-red)'
+                                      : '#121622',
                                   color: isBooked ? '#4b5563' : isSelected ? 'white' : '#9ca3af',
                                   border: isSelected
                                     ? '1.5px solid #ff4d58'
                                     : isBooked
-                                    ? '1px solid #1c202d'
-                                    : `1px solid ${tier.color}45`,
+                                      ? '1px solid #1c202d'
+                                      : `1px solid ${tier.color}45`,
                                   boxShadow: isSelected ? '0 0 10px rgba(229, 9, 20, 0.7)' : 'none',
                                   transition: 'all 0.15s ease',
                                 }}
@@ -581,14 +746,14 @@ export const BookingModal = ({
                                   backgroundColor: isBooked
                                     ? '#1c202d'
                                     : isSelected
-                                    ? 'var(--accent-red)'
-                                    : '#121622',
+                                      ? 'var(--accent-red)'
+                                      : '#121622',
                                   color: isBooked ? '#4b5563' : isSelected ? 'white' : '#9ca3af',
                                   border: isSelected
                                     ? '1.5px solid #ff4d58'
                                     : isBooked
-                                    ? '1px solid #1c202d'
-                                    : `1px solid ${tier.color}45`,
+                                      ? '1px solid #1c202d'
+                                      : `1px solid ${tier.color}45`,
                                   boxShadow: isSelected ? '0 0 10px rgba(229, 9, 20, 0.7)' : 'none',
                                   transition: 'all 0.15s ease',
                                 }}
@@ -722,10 +887,10 @@ export const BookingModal = ({
                   item.category === 'popcorn'
                     ? '🍿 Popcorn'
                     : item.category === 'drinks'
-                    ? '🥤 Cold Drinks'
-                    : item.category === 'combos'
-                    ? '⭐ Cinema Combo'
-                    : '🧀 Gourmet Snacks';
+                      ? '🥤 Cold Drinks'
+                      : item.category === 'combos'
+                        ? '⭐ Cinema Combo'
+                        : '🧀 Gourmet Snacks';
 
                 return (
                   <div
@@ -932,7 +1097,13 @@ export const BookingModal = ({
                     <strong style={{ color: 'white' }}>Cinema:</strong> {selectedTheatre?.name || 'CineVerse IMAX Palladium'}
                   </div>
                   <div>
-                    <strong style={{ color: 'white' }}>Showtime:</strong> {selectedTime} (Today)
+                    <strong style={{ color: 'white' }}>Date:</strong>{' '}
+                    <span style={{ color: isAdvance ? '#f59e0b' : '#38bdf8', fontWeight: 700 }}>
+                      {selectedDate} {isAdvance && '(Advance Premiere)'}
+                    </span>
+                  </div>
+                  <div>
+                    <strong style={{ color: 'white' }}>Showtime:</strong> {selectedTime}
                   </div>
                   <div>
                     <strong style={{ color: 'white' }}>Seats ({selectedSeats.length}):</strong>{' '}
@@ -1276,7 +1447,7 @@ export const BookingModal = ({
                     {confirmedBooking.theatre_name || selectedTheatre?.name}
                   </p>
                   <p style={{ fontSize: '0.85rem', color: '#f59e0b', fontWeight: 700, margin: 0 }}>
-                    🕒 {confirmedBooking.show_time || selectedTime} • {confirmedBooking.show_date || 'Today'}
+                    🕒 {confirmedBooking.show_time || selectedTime} • 📅 {confirmedBooking.show_date || selectedDate}
                   </p>
                 </div>
               </div>
@@ -1296,7 +1467,11 @@ export const BookingModal = ({
                 <div>
                   <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>SEATS</div>
                   <div style={{ fontWeight: 800, color: '#ef4444' }}>
-                    {(confirmedBooking.seats || []).join(', ') || 'A1, A2'}
+                    {confirmedBooking.displaySeats ||
+                     formatSeatList(confirmedBooking.seats) ||
+                     formatSeatList(confirmedBooking.seat_ids) ||
+                     selectedSeats.map((s) => s.id).join(', ') ||
+                     'A1, A2'}
                   </div>
                 </div>
                 <div>

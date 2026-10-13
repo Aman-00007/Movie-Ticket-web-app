@@ -1,7 +1,222 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { XIcon, GamepadIcon, PopcornIcon } from './Icons';
 
-export const MiniGameModal = ({ onClose }) => {
+const FALLBACK_DIRECTORS = [
+  'Nitesh Tiwari',
+  'Prasanth Varma',
+  'Abhishek Pathak',
+  'Deepak Shivdasani',
+  'Lokesh Kanagaraj',
+  'Geetu Mohandas',
+  'S.S. Rajamouli',
+  'Christopher Nolan',
+  'Ayan Mukerji',
+];
+
+const FALLBACK_ACTORS = [
+  'Ranbir Kapoor',
+  'Yash',
+  'Ajay Devgn',
+  'Teja Sajja',
+  'Sidharth Malhotra',
+  'Tabu',
+  'Sara Ali Khan',
+  'Akshaye Khanna',
+  'Rajinikanth',
+  'Robert Downey Jr.',
+  'Sai Pallavi',
+  'Pankaj Tripathi',
+];
+
+const FALLBACK_GENRES = [
+  'Mythological Action',
+  'Mystery & Thriller',
+  'Crime Drama',
+  'Supernatural Horror',
+  'Sci-Fi Adventure',
+  'Animated Epic',
+];
+
+const STATIC_2026_TRIVIA = [
+  {
+    q: 'Who directs the monumental 2026 mythological adaptation "Ramayana: Part 1"?',
+    options: ['Nitesh Tiwari', 'S.S. Rajamouli', 'Prasanth Varma', 'Sanjay Leela Bhansali'],
+    ans: 0,
+    category: '2026 Directors',
+  },
+  {
+    q: 'Which actor portrays the formidable role of Ravana in "Ramayana: Part 1" (2026)?',
+    options: ['Yash (KGF Star)', 'Ranbir Kapoor', 'Prabhas', 'Vijay Sethupathi'],
+    ans: 0,
+    category: 'Star Cast',
+  },
+  {
+    q: 'In the 2026 sequel "Drishyam The Conclusion", which actor leads as Vijay Salgaonkar?',
+    options: ['Ajay Devgn', 'Mohanlal', 'Akshay Kumar', 'Suniel Shetty'],
+    ans: 0,
+    category: 'Lead Roles',
+  },
+  {
+    q: 'Which actor awakens the divine power of Lord Hanuman in the 2026 film "Hanuman Ansh"?',
+    options: ['Teja Sajja', 'Ram Charan', 'Vijay Deverakonda', 'Allu Arjun'],
+    ans: 0,
+    category: 'Superhero & Myth',
+  },
+  {
+    q: 'What sound system powers CineVerse IMAX for genuine 360° three-dimensional audio?',
+    options: ['Dolby Atmos Multichannel', 'Standard Stereo 2.0', 'Mono Speaker', 'FM Radio Frequency'],
+    ans: 0,
+    category: 'Cinema Technology',
+  },
+  {
+    q: 'In "The Vvaan - Force of the Forrest" (2026), who portrays the lead warrior Rudra?',
+    options: ['Sidharth Malhotra', 'Varun Dhawan', 'Tiger Shroff', 'Kartik Aaryan'],
+    ans: 0,
+    category: '2026 Action Stars',
+  },
+  {
+    q: 'Which cinema screen format at CineVerse offers dual 4K laser projection with IMAX ratio?',
+    options: ['IMAX with Laser', 'Standard 720p', 'CRT Projector', '35mm Film Reel'],
+    ans: 0,
+    category: 'IMAX Experience',
+  },
+];
+
+const shuffleArray = (arr) => {
+  const copy = [...arr];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+};
+
+export const generateDynamicTrivia = (movieList = []) => {
+  const dynamicPool = [];
+  const validMovies = Array.isArray(movieList) ? movieList.filter((m) => m && m.title) : [];
+
+  // Extract all distinct directors, cast, and titles from current movie list
+  const allDirectors = Array.from(
+    new Set([
+      ...validMovies.map((m) => m.director).filter(Boolean),
+      ...FALLBACK_DIRECTORS,
+    ])
+  );
+
+  const allActors = Array.from(
+    new Set([
+      ...validMovies.flatMap((m) => {
+        if (!m.cast) return [];
+        if (Array.isArray(m.cast)) {
+          return m.cast.map((c) => (typeof c === 'object' && c ? c.name : String(c)));
+        }
+        return [String(m.cast)];
+      }).filter(Boolean),
+      ...FALLBACK_ACTORS,
+    ])
+  );
+
+  const allTitles = Array.from(
+    new Set([
+      ...validMovies.map((m) => m.title).filter(Boolean),
+      'Ramayana: Part 1',
+      'Drishyam The Conclusion',
+      'Hanuman Ansh',
+      'The Vvaan - Force of the Forrest',
+      'Toxic: A Fairy Tale',
+    ])
+  );
+
+  // 1. Generate Director Questions from real movies
+  validMovies.forEach((m) => {
+    if (m.director) {
+      const otherDirectors = allDirectors.filter((d) => d !== m.director);
+      const distractors = shuffleArray(otherDirectors).slice(0, 3);
+      const options = shuffleArray([m.director, ...distractors]);
+      dynamicPool.push({
+        q: `Who directed the 2026 cinema release "${m.title}"?`,
+        options,
+        ans: options.indexOf(m.director),
+        category: 'Director Spotlight',
+      });
+    }
+
+    // 2. Lead Actor / Star Questions
+    let leadName = null;
+    let leadRole = null;
+    if (Array.isArray(m.cast) && m.cast.length > 0) {
+      const first = m.cast[0];
+      if (typeof first === 'object' && first !== null) {
+        leadName = first.name;
+        leadRole = first.role;
+      } else if (typeof first === 'string') {
+        leadName = first;
+      }
+    }
+
+    if (leadName) {
+      const otherActors = allActors.filter((a) => a !== leadName);
+      const distractors = shuffleArray(otherActors).slice(0, 3);
+      const options = shuffleArray([leadName, ...distractors]);
+      dynamicPool.push({
+        q: `Which superstar headlines the cast of "${m.title}"?`,
+        options,
+        ans: options.indexOf(leadName),
+        category: 'Star Cast',
+      });
+
+      if (leadRole) {
+        const roleOptions = shuffleArray([leadName, ...distractors]);
+        dynamicPool.push({
+          q: `In the 2026 film "${m.title}", which actor plays the role of ${leadRole}?`,
+          options: roleOptions,
+          ans: roleOptions.indexOf(leadName),
+          category: 'Character Lore',
+        });
+      }
+
+      // 3. Movie by Actor Question
+      const otherTitles = allTitles.filter((t) => t !== m.title);
+      const titleDistractors = shuffleArray(otherTitles).slice(0, 3);
+      const titleOptions = shuffleArray([m.title, ...titleDistractors]);
+      dynamicPool.push({
+        q: `Which 2026 film features ${leadName} as a primary lead?`,
+        options: titleOptions,
+        ans: titleOptions.indexOf(m.title),
+        category: 'Star Blockbuster',
+      });
+    }
+
+    // 4. Genre questions
+    const genres = Array.isArray(m.genre)
+      ? m.genre
+      : typeof m.genre === 'string'
+        ? m.genre.split(',').map((g) => g.trim())
+        : [];
+    if (genres.length > 0) {
+      const correctGenre = genres[0];
+      const otherGenres = FALLBACK_GENRES.filter((g) => !genres.includes(g));
+      const genreDistractors = shuffleArray(otherGenres).slice(0, 3);
+      const genreOptions = shuffleArray([correctGenre, ...genreDistractors]);
+      dynamicPool.push({
+        q: `Which genre is prominently featured in "${m.title}"?`,
+        options: genreOptions,
+        ans: genreOptions.indexOf(correctGenre),
+        category: 'Genre & Style',
+      });
+    }
+  });
+
+  // Combine dynamic questions with static 2026 & tech trivia pool
+  const fullPool = dynamicPool.length >= 4
+    ? [...dynamicPool, ...STATIC_2026_TRIVIA]
+    : [...STATIC_2026_TRIVIA, ...dynamicPool];
+
+  // Pick 4 unique questions randomly
+  return shuffleArray(fullPool).slice(0, 4);
+};
+
+export const MiniGameModal = ({ onClose, onClaimReward, movies = [] }) => {
   const [activeGame, setActiveGame] = useState('popcorn'); // 'popcorn' | 'trivia'
 
   // Popcorn Game State
@@ -14,34 +229,19 @@ export const MiniGameModal = ({ onClose }) => {
   const bucketXRef = useRef(160);
   const animationFrameRef = useRef(null);
 
-  // Trivia Game State
+  // Trivia Game State - Dynamically generated from 2026 movies
+  const [triviaQuestions, setTriviaQuestions] = useState(() => generateDynamicTrivia(movies));
   const [triviaIndex, setTriviaIndex] = useState(0);
   const [triviaScore, setTriviaScore] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [triviaFinished, setTriviaFinished] = useState(false);
 
-  const triviaQuestions = [
-    {
-      q: 'Which actor stars as Coach in the sports drama "Sitaare Zameen Par"?',
-      options: ['Shah Rukh Khan', 'Aamir Khan', 'Salman Khan', 'Ranbir Kapoor'],
-      ans: 1,
-    },
-    {
-      q: 'In the blockbuster "F1: The Apex Pursuit", what is the name of Brad Pitt\'s fictional team?',
-      options: ['Ferrari', 'Red Bull', 'APXGP', 'McLaren'],
-      ans: 2,
-    },
-    {
-      q: 'What is the highest format screen available at CineVerse IMAX?',
-      options: ['720p', 'IMAX with Laser & Dolby Atmos', 'Standard 35mm', 'VHS Tape'],
-      ans: 1,
-    },
-    {
-      q: 'Which movie features the legendary devotion to Lord Shiva with an ensemble cast?',
-      options: ['Kannappa', 'Housefull 5', 'M3GAN 2.0', 'F1'],
-      ans: 0,
-    },
-  ];
+  // When live movie list loads/changes, initialize dynamic trivia
+  useEffect(() => {
+    if (movies && movies.length > 0 && triviaIndex === 0 && !triviaFinished) {
+      setTriviaQuestions(generateDynamicTrivia(movies));
+    }
+  }, [movies]);
 
   // Popcorn Catch Game Engine
   useEffect(() => {
@@ -179,7 +379,7 @@ export const MiniGameModal = ({ onClose }) => {
   };
 
   const handleTriviaAnswer = (index) => {
-    if (selectedAnswer !== null) return;
+    if (selectedAnswer !== null || !triviaQuestions[triviaIndex]) return;
     setSelectedAnswer(index);
 
     const isCorrect = index === triviaQuestions[triviaIndex].ans;
@@ -191,15 +391,21 @@ export const MiniGameModal = ({ onClose }) => {
         setSelectedAnswer(null);
       } else {
         setTriviaFinished(true);
+        if (onClaimReward) onClaimReward('FIRST50');
       }
     }, 1200);
   };
 
-  const restartTrivia = () => {
+  const refreshTriviaQuestions = () => {
+    setTriviaQuestions(generateDynamicTrivia(movies));
     setTriviaIndex(0);
     setTriviaScore(0);
     setSelectedAnswer(null);
     setTriviaFinished(false);
+  };
+
+  const restartTrivia = () => {
+    refreshTriviaQuestions();
   };
 
   return (
@@ -362,19 +568,57 @@ export const MiniGameModal = ({ onClose }) => {
         {/* GAME 2: Movie Trivia Challenge */}
         {activeGame === 'trivia' && (
           <div>
-            {!triviaFinished ? (
+            {!triviaFinished && triviaQuestions && triviaQuestions.length > 0 ? (
               <div style={{ backgroundColor: 'var(--bg-card)', borderRadius: 'var(--radius-md)', padding: 24, border: '1px solid var(--border-subtle)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16, fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, fontSize: '0.85rem', color: 'var(--text-muted)' }}>
                   <span>Question {triviaIndex + 1} of {triviaQuestions.length}</span>
-                  <span>Score: {triviaScore}</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <button
+                      onClick={refreshTriviaQuestions}
+                      title="Load fresh dynamic questions from 2026 cinema database"
+                      style={{
+                        background: 'rgba(255,255,255,0.08)',
+                        border: '1px solid var(--border-subtle)',
+                        borderRadius: 6,
+                        padding: '4px 10px',
+                        color: 'var(--text-secondary)',
+                        fontSize: '0.75rem',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 4,
+                      }}
+                    >
+                      🔄 New Questions
+                    </button>
+                    <span style={{ fontWeight: 700, color: 'var(--accent-gold)' }}>Score: {triviaScore}</span>
+                  </div>
                 </div>
 
+                {/* Dynamic Category Pill */}
+                {triviaQuestions[triviaIndex]?.category && (
+                  <div style={{ marginBottom: 12 }}>
+                    <span style={{
+                      fontSize: '0.72rem',
+                      fontWeight: 800,
+                      padding: '3px 10px',
+                      borderRadius: 12,
+                      backgroundColor: 'rgba(229, 9, 20, 0.15)',
+                      color: 'var(--accent-red)',
+                      textTransform: 'uppercase',
+                      letterSpacing: 0.8,
+                    }}>
+                      🎬 {triviaQuestions[triviaIndex].category}
+                    </span>
+                  </div>
+                )}
+
                 <h3 style={{ fontSize: '1.15rem', fontWeight: 700, marginBottom: 20 }}>
-                  {triviaQuestions[triviaIndex].q}
+                  {triviaQuestions[triviaIndex]?.q}
                 </h3>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                  {triviaQuestions[triviaIndex].options.map((opt, idx) => {
+                  {(triviaQuestions[triviaIndex]?.options || []).map((opt, idx) => {
                     let btnColor = 'var(--bg-secondary)';
                     let border = '1px solid var(--border-subtle)';
 
@@ -390,7 +634,7 @@ export const MiniGameModal = ({ onClose }) => {
 
                     return (
                       <button
-                        key={opt}
+                        key={`${opt}-${idx}`}
                         onClick={() => handleTriviaAnswer(idx)}
                         disabled={selectedAnswer !== null}
                         style={{
@@ -432,9 +676,14 @@ export const MiniGameModal = ({ onClose }) => {
                 }}>
                   🎉 Use code <strong>FIRST50</strong> for 50% discount on your first booking!
                 </div>
-                <button onClick={restartTrivia} className="btn btn-secondary">
-                  Play Again 🔄
-                </button>
+                <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
+                  <button onClick={restartTrivia} className="btn btn-secondary">
+                    Play Again 🔄
+                  </button>
+                  <button onClick={refreshTriviaQuestions} className="btn btn-primary">
+                    Fresh Dynamic Quiz 🎲
+                  </button>
+                </div>
               </div>
             )}
           </div>

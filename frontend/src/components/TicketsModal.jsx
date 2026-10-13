@@ -1,6 +1,60 @@
 import React from 'react';
 import { XIcon, TicketIcon } from './Icons';
 
+export const formatSeatList = (seats) => {
+  if (!seats) return '';
+  if (typeof seats === 'string') {
+    if (seats.includes('[object Object]')) return 'Seats Confirmed';
+    if (seats.startsWith('[') || seats.startsWith('{')) {
+      try {
+        seats = JSON.parse(seats);
+      } catch (e) {
+        return seats;
+      }
+    } else {
+      return seats;
+    }
+  }
+  if (Array.isArray(seats)) {
+    const list = seats
+      .map((s) => {
+        if (!s) return '';
+        if (typeof s === 'string' || typeof s === 'number') {
+          const str = String(s);
+          return str.includes('[object Object]') ? '' : str;
+        }
+        if (typeof s === 'object') {
+          return (
+            s.id ||
+            s.label ||
+            s.seat_id ||
+            s.seat_no ||
+            (s.row && (s.number || s.seat_number) ? `${s.row}${s.number || s.seat_number}` : '') ||
+            s.number ||
+            s.name ||
+            s.seat ||
+            ''
+          );
+        }
+        return '';
+      })
+      .filter(Boolean)
+      .join(', ');
+    return list || 'Seats Confirmed';
+  }
+  if (typeof seats === 'object') {
+    return (
+      seats.id ||
+      seats.label ||
+      seats.seat_id ||
+      seats.seat_no ||
+      (seats.row && (seats.number || seats.seat_number) ? `${seats.row}${seats.number || seats.seat_number}` : '') ||
+      'Seats Confirmed'
+    );
+  }
+  return String(seats);
+};
+
 export const TicketsModal = ({ bookings, onClose }) => {
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -79,7 +133,7 @@ export const TicketsModal = ({ bookings, onClose }) => {
                   </div>
                   <div style={{ marginTop: 8, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--accent-red)' }}>
-                      Seats: {Array.isArray(b.seats) ? b.seats.join(', ') : 'Seats Confirmed'}
+                      Seats: {formatSeatList(b.seats) || formatSeatList(b.seat_ids) || 'Seats Confirmed'}
                     </span>
                     <span style={{ fontSize: '0.85rem', fontWeight: 800 }}>₹{b.total_amount}</span>
                   </div>
