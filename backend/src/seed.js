@@ -1,19 +1,22 @@
 require('dotenv').config();
-const { sequelize } = require('./config/database');
+const { sequelize, initializeTables } = require('./config/db');
 const { User, Movie, Theatre, Show, Seat, Beverage } = require('./models');
 
 const seedDatabase = async () => {
   try {
-    console.log('🔄 Connecting to PostgreSQL database (port 4000)...');
+    console.log('🔄 Connecting to PostgreSQL database (CineVerse on port 4000)...');
     await sequelize.authenticate();
     console.log('✅ PostgreSQL connected successfully!');
 
-    console.log('🔄 Synchronizing database tables (User, Movie, Theatre, Show, Seat, Booking, Beverage)...');
+    // Initialize raw DDL tables if they do not exist
+    await initializeTables();
+
+    console.log('🔄 Synchronizing database tables cleanly...');
     await sequelize.sync({ force: true });
-    console.log('✅ All PostgreSQL tables cleanly created!');
+    console.log('✅ All PostgreSQL tables cleanly created in CineVerse!');
 
     // 1. Users
-    console.log('👤 Seeding users...');
+    console.log('👤 Seeding users with secure bcrypt hashed passwords...');
     const user = await User.create({
       name: 'Aman Sharma',
       email: 'user@cineverse.com',
@@ -32,13 +35,13 @@ const seedDatabase = async () => {
       role: 'admin',
     });
 
-    // 2. Real-world BookMyShow trending movies
-    console.log('🎬 Seeding trending cinema blockbusters...');
+    // 2. Real-world BookMyShow trending movies with real posters and trailers
+    console.log('🎬 Seeding trending cinema blockbusters with real posters and trailers...');
     const movies = await Movie.bulkCreate([
       {
         title: 'Pushpa 2: The Rule',
         description: 'The clash between Pushpa Raj and Bhanwar Singh Shekhawat escalates into an all-out war of supremacy, power, and syndicates.',
-        poster_url: 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=800&auto=format&fit=crop&q=80',
+        poster_url: 'https://upload.wikimedia.org/wikipedia/en/1/11/Pushpa_2-_The_Rule.jpg',
         backdrop_url: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=1200&auto=format&fit=crop&q=80',
         trailer_url: 'https://www.youtube.com/embed/g3JUbgZXflM',
         duration_min: 201,
@@ -56,10 +59,30 @@ const seedDatabase = async () => {
         director: 'Sukumar',
       },
       {
+        title: 'Chhaava',
+        description: 'The monumental saga of Chhatrapati Sambhaji Maharaj, the valiant second ruler of the Maratha Empire and his unyielding courage against the Mughal army.',
+        poster_url: 'https://upload.wikimedia.org/wikipedia/en/7/75/Chhaava_film_poster.jpg',
+        backdrop_url: 'https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?w=1200&auto=format&fit=crop&q=80',
+        trailer_url: 'https://www.youtube.com/embed/m_KkYt2Vj8s',
+        duration_min: 162,
+        rating: 4.9,
+        genre: ['Action', 'Drama', 'Period'],
+        language: ['Hindi', 'Marathi'],
+        release_date: '2025-02-14',
+        certification: 'UA',
+        status: 'now_showing',
+        cast: [
+          { name: 'Vicky Kaushal', role: 'Chhatrapati Sambhaji Maharaj' },
+          { name: 'Rashmika Mandanna', role: 'Yesubai Bhonsale' },
+          { name: 'Akshaye Khanna', role: 'Aurangzeb' },
+        ],
+        director: 'Laxman Utekar',
+      },
+      {
         title: 'Bhool Bhulaiyaa 3',
         description: 'Rooh Baba returns to the haunted palace of Raktaghat only to be confronted by not one, but two vengeful spirits claiming to be Manjulika.',
-        poster_url: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=800&auto=format&fit=crop&q=80',
-        backdrop_url: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=1200&auto=format&fit=crop&q=80',
+        poster_url: 'https://upload.wikimedia.org/wikipedia/en/e/e4/Bhool_Bhulaiyaa_3_poster.jpg',
+        backdrop_url: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=1200&auto=format&fit=crop&q=80',
         trailer_url: 'https://www.youtube.com/embed/5FkXbL_j_c8',
         duration_min: 158,
         rating: 4.7,
@@ -78,8 +101,8 @@ const seedDatabase = async () => {
       {
         title: 'Singham Again',
         description: 'DCP Bajirao Singham unites with DCP Veer Sooryavanshi, Inspector Sangram Bhalerao, ACP Satya, and Shakti Shetty on a high-stakes cross-border rescue mission.',
-        poster_url: 'https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=800&auto=format&fit=crop&q=80',
-        backdrop_url: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=1200&auto=format&fit=crop&q=80',
+        poster_url: 'https://upload.wikimedia.org/wikipedia/en/0/04/Singham_Again_poster.jpg',
+        backdrop_url: 'https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=1200&auto=format&fit=crop&q=80',
         trailer_url: 'https://www.youtube.com/embed/1kVK0mP_32Y',
         duration_min: 165,
         rating: 4.6,
@@ -97,30 +120,10 @@ const seedDatabase = async () => {
         director: 'Rohit Shetty',
       },
       {
-        title: 'Chhaava',
-        description: 'The monumental saga of Chhatrapati Sambhaji Maharaj, the valiant second ruler of the Maratha Empire and his unyielding courage against the Mughal army.',
-        poster_url: 'https://images.unsplash.com/photo-1478760329108-5c3ed9d495a0?w=800&auto=format&fit=crop&q=80',
-        backdrop_url: 'https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?w=1200&auto=format&fit=crop&q=80',
-        trailer_url: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-        duration_min: 162,
-        rating: 4.9,
-        genre: ['Action', 'Drama', 'Period'],
-        language: ['Hindi', 'Marathi'],
-        release_date: '2025-02-14',
-        certification: 'UA',
-        status: 'now_showing',
-        cast: [
-          { name: 'Vicky Kaushal', role: 'Chhatrapati Sambhaji Maharaj' },
-          { name: 'Rashmika Mandanna', role: 'Yesubai Bhonsale' },
-          { name: 'Akshaye Khanna', role: 'Aurangzeb' },
-        ],
-        director: 'Laxman Utekar',
-      },
-      {
         title: 'Gladiator II',
         description: 'Years after witnessing the death of Maximus at the hands of his uncle, Lucius must enter the Colosseum after his home is conquered by the tyrannical Emperors.',
-        poster_url: 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=800&auto=format&fit=crop&q=80',
-        backdrop_url: 'https://images.unsplash.com/photo-1511919884226-fd3cad34687c?w=1200&auto=format&fit=crop&q=80',
+        poster_url: 'https://upload.wikimedia.org/wikipedia/en/0/04/Gladiator_II_%282024%29_poster.jpg',
+        backdrop_url: 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=1200&auto=format&fit=crop&q=80',
         trailer_url: 'https://www.youtube.com/embed/4rgYUipGJNo',
         duration_min: 148,
         rating: 4.8,
@@ -139,8 +142,8 @@ const seedDatabase = async () => {
       {
         title: 'Mufasa: The Lion King',
         description: 'An orphaned cub lost and alone meets a sympathetic lion named Taka—the heir to a royal bloodline—initiating an expansive journey across the African savanna.',
-        poster_url: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?w=800&auto=format&fit=crop&q=80',
-        backdrop_url: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1200&auto=format&fit=crop&q=80',
+        poster_url: 'https://upload.wikimedia.org/wikipedia/en/0/0b/Mufasa_The_Lion_King_Movie_2024.jpeg',
+        backdrop_url: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?w=1200&auto=format&fit=crop&q=80',
         trailer_url: 'https://www.youtube.com/embed/o17MF9vnabg',
         duration_min: 118,
         rating: 4.8,
@@ -159,8 +162,8 @@ const seedDatabase = async () => {
       {
         title: 'F1: The Apex Pursuit',
         description: 'A retired Formula 1 veteran returns to motorsport to partner and mentor an extraordinary rookie driver at the APXGP racing team.',
-        poster_url: 'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=800&auto=format&fit=crop&q=80',
-        backdrop_url: 'https://images.unsplash.com/photo-1511919884226-fd3cad34687c?w=1200&auto=format&fit=crop&q=80',
+        poster_url: 'https://upload.wikimedia.org/wikipedia/en/3/38/F1_%282025_film%29.png',
+        backdrop_url: 'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=1200&auto=format&fit=crop&q=80',
         trailer_url: 'https://www.youtube.com/embed/8v_4O44wvqg',
         duration_min: 145,
         rating: 4.9,
@@ -178,10 +181,10 @@ const seedDatabase = async () => {
       },
       {
         title: 'Sitaare Zameen Par',
-        description: 'An uplifting and humorous sports drama celebrating down syndrome athletes coached by an unconventional mentor.',
-        poster_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&auto=format&fit=crop&q=80',
+        description: 'An uplifting and humorous sports drama celebrating neurodivergent athletes coached by an unconventional mentor.',
+        poster_url: 'https://upload.wikimedia.org/wikipedia/en/thumb/8/87/Sitaare_Zameen_Par_poster.jpg/500px-Sitaare_Zameen_Par_poster.jpg',
         backdrop_url: 'https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?w=1200&auto=format&fit=crop&q=80',
-        trailer_url: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+        trailer_url: 'https://www.youtube.com/embed/6_d0zV5HjD4',
         duration_min: 155,
         rating: 4.8,
         genre: ['Drama', 'Sports', 'Family'],
@@ -198,9 +201,9 @@ const seedDatabase = async () => {
       {
         title: 'Game Changer',
         description: 'An honest Indian Administrative Service (IAS) officer fights against corrupt political dynasties to guarantee free and transparent elections.',
-        poster_url: 'https://images.unsplash.com/photo-1470115636492-6d2b56f9146d?w=800&auto=format&fit=crop&q=80',
-        backdrop_url: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1200&auto=format&fit=crop&q=80',
-        trailer_url: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+        poster_url: 'https://upload.wikimedia.org/wikipedia/en/6/6a/Game_Changer_Telugu.jpg',
+        backdrop_url: 'https://images.unsplash.com/photo-1470115636492-6d2b56f9146d?w=1200&auto=format&fit=crop&q=80',
+        trailer_url: 'https://www.youtube.com/embed/gB8jW_D8Krg',
         duration_min: 165,
         rating: 4.7,
         genre: ['Action', 'Thriller', 'Drama'],
@@ -218,9 +221,9 @@ const seedDatabase = async () => {
       {
         title: 'Baby John',
         description: 'A dedicated former cop assumes a peaceful identity to protect his young daughter, until his violent past reemerges.',
-        poster_url: 'https://images.unsplash.com/photo-1518676590629-3dcbd9c5a5c9?w=800&auto=format&fit=crop&q=80',
+        poster_url: 'https://upload.wikimedia.org/wikipedia/en/thumb/2/29/Baby_John_%28title_card%29.jpg/500px-Baby_John_%28title_card%29.jpg',
         backdrop_url: 'https://images.unsplash.com/photo-1448375240586-882707db888b?w=1200&auto=format&fit=crop&q=80',
-        trailer_url: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+        trailer_url: 'https://www.youtube.com/embed/fGfE0FjIq20',
         duration_min: 152,
         rating: 4.5,
         genre: ['Action', 'Thriller'],
@@ -239,7 +242,7 @@ const seedDatabase = async () => {
       {
         title: 'Captain America: Brave New World',
         description: 'Sam Wilson finds himself in the middle of an international incident as he must discover the motive behind a nefarious global plot before the mastermind has the entire world seeing red.',
-        poster_url: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?w=800&auto=format&fit=crop&q=80',
+        poster_url: 'https://upload.wikimedia.org/wikipedia/en/a/a4/Captain_America_Brave_New_World_poster.jpg',
         backdrop_url: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=1200&auto=format&fit=crop&q=80',
         trailer_url: 'https://www.youtube.com/embed/1pHDWnXmKMY',
         duration_min: 118,
@@ -259,9 +262,9 @@ const seedDatabase = async () => {
       {
         title: 'Kannappa',
         description: 'The monumental tale of the supreme devotee of Lord Shiva with divine battles and spiritual grandeur.',
-        poster_url: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=800&auto=format&fit=crop&q=80',
+        poster_url: 'https://upload.wikimedia.org/wikipedia/en/e/ed/Kannappa_%28film%29.jpg',
         backdrop_url: 'https://images.unsplash.com/photo-1478760329108-5c3ed9d495a0?w=1200&auto=format&fit=crop&q=80',
-        trailer_url: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+        trailer_url: 'https://www.youtube.com/embed/hJ5f_F53aQY',
         duration_min: 165,
         rating: 4.6,
         genre: ['Action', 'Mythology', 'Drama'],
@@ -470,7 +473,7 @@ const seedDatabase = async () => {
       }
     }
 
-    console.log('🎉 PostgreSQL Database successfully seeded with 12 blockbuster movies, multi-city theatres, showtimes, seats, and gourmet menus!');
+    console.log('🎉 PostgreSQL Database "CineVerse" successfully seeded with real movie posters, trailers, multi-city theatres, and showtimes!');
     console.log('✅ Demo Credentials ready:');
     console.log('   User:  user@cineverse.com  / password123');
     console.log('   Admin: admin@cineverse.com / admin123');
