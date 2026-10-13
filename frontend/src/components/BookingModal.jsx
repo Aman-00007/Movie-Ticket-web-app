@@ -293,14 +293,14 @@ export const BookingModal = ({
                             backgroundColor: isBooked
                               ? '#262935'
                               : isSelected
-                              ? 'var(--accent-red)'
-                              : 'var(--bg-card)',
+                                ? 'var(--accent-red)'
+                                : 'var(--bg-card)',
                             color: isBooked ? '#555' : isSelected ? 'white' : 'var(--text-secondary)',
                             border: isSelected
                               ? '1px solid #ff4d58'
                               : isBooked
-                              ? '1px solid #222'
-                              : `1px solid ${r.color}40`,
+                                ? '1px solid #222'
+                                : `1px solid ${r.color}40`,
                             transition: 'all 0.15s',
                           }}
                         >
@@ -681,18 +681,18 @@ export const BookingModal = ({
                   justifyContent: 'center',
                 }}>
                   <svg width="60" height="60" viewBox="0 0 100 100" fill="#111">
-                    <rect x="0" y="0" width="30" height="30"/>
-                    <rect x="5" y="5" width="20" height="20" fill="white"/>
-                    <rect x="10" y="10" width="10" height="10"/>
-                    <rect x="70" y="0" width="30" height="30"/>
-                    <rect x="75" y="5" width="20" height="20" fill="white"/>
-                    <rect x="80" y="10" width="10" height="10"/>
-                    <rect x="0" y="70" width="30" height="30"/>
-                    <rect x="5" y="75" width="20" height="20" fill="white"/>
-                    <rect x="10" y="80" width="10" height="10"/>
-                    <rect x="40" y="10" width="15" height="15"/>
-                    <rect x="40" y="40" width="20" height="20"/>
-                    <rect x="70" y="70" width="25" height="25"/>
+                    <rect x="0" y="0" width="30" height="30" />
+                    <rect x="5" y="5" width="20" height="20" fill="white" />
+                    <rect x="10" y="10" width="10" height="10" />
+                    <rect x="70" y="0" width="30" height="30" />
+                    <rect x="75" y="5" width="20" height="20" fill="white" />
+                    <rect x="80" y="10" width="10" height="10" />
+                    <rect x="0" y="70" width="30" height="30" />
+                    <rect x="5" y="75" width="20" height="20" fill="white" />
+                    <rect x="10" y="80" width="10" height="10" />
+                    <rect x="40" y="10" width="15" height="15" />
+                    <rect x="40" y="40" width="20" height="20" />
+                    <rect x="70" y="70" width="25" height="25" />
                   </svg>
                 </div>
               </div>
