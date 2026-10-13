@@ -326,7 +326,7 @@ Notifications fire at:
 | Database      | PostgreSQL 14+                          |
 | Auth          | JWT + bcrypt                            |
 | Payments      | Stripe API (test mode)                  |
-| AI            | Google Gemini 1.5 Flash                 |
+| AI            | Google Gemini 3.1 Flash                 |
 | Maps          | Leaflet.js + OpenStreetMap              |
 | Email         | Nodemailer                              |
 | Notifications | React Hot Toast                         |

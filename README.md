@@ -3,10 +3,10 @@
 [![React](https://img.shields.io/badge/Frontend-React%2018%20%2B%20Vite-61DAFB?logo=react&logoColor=black)](https://react.dev/)
 [![Express](https://img.shields.io/badge/Backend-Node.js%20%2B%20Express%20MVC-black?logo=express)](https://expressjs.com/)
 [![PostgreSQL](https://img.shields.io/badge/Database-PostgreSQL%20%2B%20Sequelize-336791?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
-[![Gemini](https://img.shields.io/badge/AI-Google%20Gemini%201.5-8E75C2?logo=google&logoColor=white)](https://ai.google.dev/)
+[![Gemini](https://img.shields.io/badge/AI-Google%20Gemini%203.1%20Flash-8E75C2?logo=google&logoColor=white)](https://ai.google.dev/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-**CineVerse** is a modern full-stack movie ticket booking web application inspired by BookMyShow and AMC Theatres. Built with a responsive **React 18 + Vite** frontend and an **Express.js MVC** backend backed by **PostgreSQL** with Sequelize ORM and **Google Gemini AI**.
+**CineVerse** is a modern full-stack movie ticket booking web application inspired by BookMyShow and AMC Theatres. Built with a responsive **React 18 + Vite** frontend and an **Express.js MVC** backend backed by **PostgreSQL** with Sequelize ORM and **Google Gemini 3.1 Flash AI**.
 
 ---
 
