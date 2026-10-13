@@ -101,7 +101,7 @@ ${language ? `Language: ${language}` : ''}
 
 Pick 2-3 top recommendations from the list above. Format clearly with title, rating, reason, and an engaging fun tone with emojis. Max 180 words.`;
 
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-3.1-flash-lite' });
     const result = await model.generateContent(prompt);
     const text = result.response.text();
 
@@ -145,7 +145,7 @@ exports.chat = async (req, res, next) => {
       .map((m) => `"${m.title}" (${(m.genre || []).join(', ')})`)
       .join(', ');
 
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-3.1-flash-lite' });
     const systemPrompt = `You are CineBot, CineVerse's friendly cinema AI assistant. Currently showing: ${movieContextStr}. Answer helpfully, suggest movies, explain bookings, and keep answers concise (max 90 words) with emojis.`;
 
     const chat = model.startChat({

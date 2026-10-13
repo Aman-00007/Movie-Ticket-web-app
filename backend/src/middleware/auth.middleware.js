@@ -31,3 +31,20 @@ exports.restrictTo = (...roles) => {
     next();
   };
 };
+
+exports.optionalAuth = async (req, res, next) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.split(' ')[1];
+      const decoded = verifyToken(token);
+      const user = await User.findByPk(decoded.id);
+      if (user && user.is_active) {
+        req.user = user;
+      }
+    }
+  } catch {
+    // Continue as guest
+  }
+  next();
+};

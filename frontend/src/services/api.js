@@ -374,9 +374,13 @@ export const api = {
 
   async getAiRecommendation(payload) {
     try {
+      const token = localStorage.getItem('cineverse_token');
       const res = await fetch(`${BASE_URL}/ai/recommend`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify(payload),
       });
       if (!res.ok) throw new Error('AI endpoint failed');
@@ -392,9 +396,13 @@ export const api = {
 
   async chatWithAi(message, history = []) {
     try {
+      const token = localStorage.getItem('cineverse_token');
       const res = await fetch(`${BASE_URL}/ai/chat`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify({ message, history }),
       });
       if (!res.ok) throw new Error('Chat failed');
