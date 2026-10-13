@@ -6,7 +6,7 @@ const Beverage = sequelize.define('Beverage', {
   name: { type: DataTypes.STRING(150), allowNull: false },
   description: { type: DataTypes.TEXT },
   price: { type: DataTypes.DECIMAL(10, 2), allowNull: false },
-  category: { type: DataTypes.ENUM('drinks', 'snacks', 'combos', 'desserts'), allowNull: false },
+  category: { type: DataTypes.ENUM('drinks', 'snacks', 'combos', 'desserts', 'popcorn'), allowNull: false },
   image_url: { type: DataTypes.TEXT },
   calories: { type: DataTypes.INTEGER },
   is_vegetarian: { type: DataTypes.BOOLEAN, defaultValue: true },

@@ -1,10 +1,11 @@
 const { Theatre } = require('../models');
+const { Op } = require('sequelize');
 
 exports.getTheatres = async (req, res, next) => {
   try {
     const { city } = req.query;
     const where = { is_active: true };
-    if (city) where.city = { $iLike: `%${city}%` };
+    if (city) where.city = { [Op.iLike]: `%${city}%` };
     const theatres = await Theatre.findAll({ where });
     res.json({ success: true, data: theatres });
   } catch (err) {
