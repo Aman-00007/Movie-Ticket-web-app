@@ -340,7 +340,7 @@ const REAL_2026_MOVIES = [
     language: ['English', 'Hindi', 'Tamil', 'Telugu'],
     certification: 'UA',
     status: 'upcoming',
-    release_date: '2026-05-01',
+    release_date: '2026-12-18',
     director: 'Anthony and Joe Russo',
     cast: [
       { name: 'Robert Downey Jr.', role: 'Victor Von Doom / Doctor Doom' },

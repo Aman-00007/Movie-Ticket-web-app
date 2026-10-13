@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { XIcon, CheckIcon, MapPinIcon, PopcornIcon, TicketIcon } from './Icons';
-import { api } from '../services/api';
+import { api, getPaymentQrCodeUrl, QR_API_BASE } from '../services/api';
 import { getMovieBookingAvailability } from '../models';
 
 export const BookingModal = ({
@@ -136,22 +136,14 @@ export const BookingModal = ({
   const [confirmedBooking, setConfirmedBooking] = useState(null);
   const [processing, setProcessing] = useState(false);
 
-  // ─── Grand Auditorium Layout: 10 Rows (J down to A), 16 Seats per row = 160 Seats ───
+  // ─── Grand Auditorium Layout: Screen at Front -> Classic (A, B) -> Executive (C, D, E) -> VIP Prime (F, G, H) -> Royal Recliners (I, J at Rear) ───
   const seatTiers = [
     {
-      name: 'ROYAL RECLINER SUITE (Plush Leather & Private Table)',
-      price: 550,
-      color: '#f59e0b',
-      badge: 'ROYAL',
-      rows: ['J', 'I'],
-      isRecliner: true,
-    },
-    {
-      name: 'VIP PRIME LOUNGE (Maximum Legroom & Acoustic Sweet-Spot)',
-      price: 420,
-      color: '#a855f7',
-      badge: 'VIP PRIME',
-      rows: ['H', 'G', 'F'],
+      name: 'CLASSIC STANDARD (Front Proximity Surround)',
+      price: 220,
+      color: '#94a3b8',
+      badge: 'CLASSIC',
+      rows: ['A', 'B'],
       isRecliner: false,
     },
     {
@@ -159,18 +151,45 @@ export const BookingModal = ({
       price: 320,
       color: '#06b6d4',
       badge: 'EXECUTIVE',
-      rows: ['E', 'D', 'C'],
+      rows: ['C', 'D', 'E'],
       isRecliner: false,
     },
     {
-      name: 'CLASSIC STANDARD (Front Proximity Surround)',
-      price: 220,
-      color: '#94a3b8',
-      badge: 'CLASSIC',
-      rows: ['B', 'A'],
+      name: 'VIP PRIME LOUNGE (Maximum Legroom & Acoustic Sweet-Spot)',
+      price: 420,
+      color: '#a855f7',
+      badge: 'VIP PRIME',
+      rows: ['F', 'G', 'H'],
       isRecliner: false,
     },
+    {
+      name: 'ROYAL RECLINER SUITE (Plush Leather & Rear VIP Elevation)',
+      price: 550,
+      color: '#f59e0b',
+      badge: 'ROYAL',
+      rows: ['I', 'J'],
+      isRecliner: true,
+    },
   ];
+
+  // 5-minute countdown for Dynamic UPI QR payment
+  const [qrSecondsLeft, setQrSecondsLeft] = useState(300);
+  const [copiedVpa, setCopiedVpa] = useState(false);
+  const [qrVerifying, setQrVerifying] = useState(false);
+
+  useEffect(() => {
+    if (step !== 4 || paymentMethod !== 'upi') return;
+    const interval = setInterval(() => {
+      setQrSecondsLeft((prev) => (prev > 0 ? prev - 1 : 300));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [step, paymentMethod]);
+
+  const formatQrTime = (sec) => {
+    const m = Math.floor(sec / 60);
+    const s = sec % 60;
+    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  };
 
   // Realistic pre-booked seats distributed across the grand auditorium
   const bookedSeatKeys = [
@@ -270,7 +289,7 @@ export const BookingModal = ({
       promo_code: promoCode,
       total_amount: grandTotal,
       payment_method: paymentMethod,
-      gateway: 'Stripe Instant Checkout',
+      gateway: paymentMethod === 'upi' ? 'UPI Dynamic QR Gateway' : paymentMethod === 'card' ? 'Stripe Instant Checkout' : 'NetBanking Portal',
       createdAt: new Date().toISOString(),
     };
 
@@ -301,6 +320,15 @@ export const BookingModal = ({
     } finally {
       setProcessing(false);
     }
+  };
+
+  // Instant fake payment simulator via QR
+  const simulateFakeUpiPayment = async () => {
+    setQrVerifying(true);
+    setTimeout(async () => {
+      setQrVerifying(false);
+      await handleFinalPayment();
+    }, 1200);
   };
 
   return (
@@ -781,6 +809,26 @@ export const BookingModal = ({
                   </div>
                 </div>
               ))}
+
+              {/* Auditorium Rear Indicator */}
+              <div
+                style={{
+                  marginTop: 10,
+                  padding: '6px 18px',
+                  borderRadius: 20,
+                  border: '1px dashed rgba(255,255,255,0.18)',
+                  backgroundColor: 'rgba(255,255,255,0.02)',
+                  fontSize: '0.72rem',
+                  color: 'var(--text-muted)',
+                  letterSpacing: 2,
+                  textTransform: 'uppercase',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                }}
+              >
+                <span>🚪 AUDITORIUM REAR ENTRANCE / EXIT</span>
+              </div>
             </div>
 
             {/* Legend & Seat Types */}
@@ -1274,25 +1322,122 @@ export const BookingModal = ({
                   )}
 
                   {paymentMethod === 'upi' && (
-                    <div style={{ textAlign: 'center', padding: '12px 0', color: 'var(--text-secondary)' }}>
-                      <p style={{ fontSize: '0.85rem', margin: '0 0 8px' }}>Scan QR Code via Google Pay / PhonePe / Paytm</p>
+                    <div
+                      style={{
+                        padding: '16px 14px',
+                        backgroundColor: '#0a0d16',
+                        borderRadius: 14,
+                        border: '1px solid rgba(245, 158, 11, 0.35)',
+                        textAlign: 'center',
+                      }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                        <span style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--accent-gold)' }}>
+                          ⚡ DYNAMIC UPI QR GATEWAY
+                        </span>
+                        <span style={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: 700 }}>
+                          ⏱️ Valid: <span style={{ color: '#ef4444' }}>{formatQrTime(qrSecondsLeft)}</span>
+                        </span>
+                      </div>
+
+                      {/* Configurable QR API Indicator */}
                       <div
                         style={{
-                          width: 100,
-                          height: 100,
-                          margin: '0 auto',
-                          background: 'white',
-                          borderRadius: 8,
+                          fontSize: '0.7rem',
+                          color: 'var(--text-muted)',
+                          marginBottom: 10,
+                          padding: '4px 8px',
+                          borderRadius: 6,
+                          backgroundColor: 'rgba(255,255,255,0.04)',
+                          display: 'inline-block',
+                        }}
+                      >
+                        🔗 QR API: <span style={{ color: '#38bdf8' }}>{QR_API_BASE}</span> (Customizable)
+                      </div>
+
+                      {/* Live Generated QR Code via API */}
+                      <div
+                        style={{
+                          width: 190,
+                          height: 190,
+                          margin: '0 auto 12px',
+                          backgroundColor: '#ffffff',
+                          padding: 10,
+                          borderRadius: 12,
+                          boxShadow: '0 8px 25px rgba(0,0,0,0.6), 0 0 15px rgba(245, 158, 11, 0.25)',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          color: 'black',
-                          fontSize: '0.75rem',
-                          fontWeight: 800,
+                          position: 'relative',
                         }}
                       >
-                        [QR CODE]
+                        <img
+                          src={getPaymentQrCodeUrl(grandTotal, 'TKT' + Math.floor(1000 + Math.random() * 9000))}
+                          alt="CineVerse Fake UPI Payment QR"
+                          style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
+                        />
                       </div>
+
+                      {/* Amount & UPI ID Display */}
+                      <div style={{ marginBottom: 12 }}>
+                        <div style={{ fontSize: '1.2rem', fontWeight: 900, color: 'white', marginBottom: 4 }}>
+                          ₹{grandTotal}
+                        </div>
+                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
+                          <span>VPA: <strong>cineverse.pay@icici</strong></span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              navigator.clipboard?.writeText('cineverse.pay@icici');
+                              setCopiedVpa(true);
+                              setTimeout(() => setCopiedVpa(false), 2000);
+                            }}
+                            style={{
+                              background: 'rgba(255,255,255,0.08)',
+                              border: '1px solid rgba(255,255,255,0.15)',
+                              borderRadius: 4,
+                              color: copiedVpa ? '#10b981' : 'white',
+                              fontSize: '0.68rem',
+                              padding: '2px 6px',
+                              cursor: 'pointer',
+                            }}
+                          >
+                            {copiedVpa ? '✓ Copied' : 'Copy'}
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Supported UPI Apps */}
+                      <div style={{ fontSize: '0.72rem', color: '#64748b', marginBottom: 14 }}>
+                        Supported Apps: Google Pay • PhonePe • Paytm • BHIM • Cred
+                      </div>
+
+                      {/* Instant Fake Payment Simulation Trigger */}
+                      <button
+                        type="button"
+                        onClick={simulateFakeUpiPayment}
+                        disabled={processing || qrVerifying}
+                        className="btn btn-primary"
+                        style={{
+                          width: '100%',
+                          padding: '11px 16px',
+                          fontSize: '0.88rem',
+                          fontWeight: 800,
+                          backgroundColor: qrVerifying ? '#10b981' : '#e50914',
+                          borderColor: qrVerifying ? '#10b981' : '#e50914',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: 8,
+                          boxShadow: '0 4px 15px rgba(229, 9, 20, 0.4)',
+                        }}
+                      >
+                        {qrVerifying ? (
+                          <>🔄 Verifying UPI Transaction with NPCI...</>
+                        ) : (
+                          <>⚡ Simulate Fake QR Payment (Instant Pay)</>
+                        )}
+                      </button>
                     </div>
                   )}
 
@@ -1496,23 +1641,20 @@ export const BookingModal = ({
                   borderTop: '1px dashed rgba(255,255,255,0.15)',
                 }}
               >
-                <div
+                <img
+                  src={getPaymentQrCodeUrl(confirmedBooking.total_amount || grandTotal, confirmedBooking.booking_code)}
+                  alt="CineVerse Verified Pass QR"
                   style={{
                     width: 72,
                     height: 72,
                     backgroundColor: 'white',
-                    borderRadius: 6,
+                    borderRadius: 8,
                     padding: 4,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: 'black',
-                    fontWeight: 800,
-                    fontSize: '0.65rem',
+                    objectFit: 'contain',
+                    flexShrink: 0,
+                    boxShadow: '0 4px 15px rgba(0,0,0,0.5)',
                   }}
-                >
-                  [QR PASS]
-                </div>
+                />
                 <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', lineHeight: 1.4 }}>
                   Scan at CineVerse turnstile. Free cancellation up to 2 hours before showtime.
                 </div>
