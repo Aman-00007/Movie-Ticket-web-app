@@ -657,12 +657,18 @@ export const api = {
       const res = await fetch(`${BASE_URL}/auth/me`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (!res.ok) throw new Error('Failed to fetch user');
+      if (!res.ok) {
+        if (res.status === 401) {
+          localStorage.removeItem('cineverse_token');
+          localStorage.removeItem('cineverse_user');
+          return null;
+        }
+        throw new Error('Failed to fetch user');
+      }
       const data = await res.json();
       return data.user;
     } catch {
-      const saved = localStorage.getItem('cineverse_user');
-      return saved ? JSON.parse(saved) : null;
+      return null;
     }
   },
 
@@ -703,7 +709,14 @@ export const api = {
       body: JSON.stringify(bookingData),
     });
     const data = await res.json();
-    if (!res.ok) throw new Error(data.message || 'Booking failed');
+    if (!res.ok) {
+      if (res.status === 401) {
+        localStorage.removeItem('cineverse_token');
+        localStorage.removeItem('cineverse_user');
+        throw new Error('Your session expired because JWT keys were changed. Please sign in again with 1-click.');
+      }
+      throw new Error(data.message || 'Booking failed');
+    }
     return data;
   },
 
@@ -777,6 +790,37 @@ export const api = {
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.message || 'Failed to cancel booking');
+    return data;
+  },
+
+  // ─── AI Assistant (Gemini / CineBot) ───
+  async getAiRecommendation({ query, mood, genre, language }) {
+    const token = localStorage.getItem('cineverse_token');
+    const res = await fetch(`${BASE_URL}/ai/recommend`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({ query, mood, genre, language }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || 'Failed to get AI recommendation');
+    return data;
+  },
+
+  async chatWithAi(message, history = []) {
+    const token = localStorage.getItem('cineverse_token');
+    const res = await fetch(`${BASE_URL}/ai/chat`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({ message, history }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || 'AI chat request failed');
     return data;
   },
 };

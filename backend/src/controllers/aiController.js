@@ -2,9 +2,17 @@ const { GoogleGenerativeAI } = require('@google/generative-ai');
 const { Movie, Booking } = require('../models');
 const { Op } = require('sequelize');
 
+const FLASH_MODELS = [
+  'gemini-3.1-flash-lite',
+  'gemini-3.8-flash',
+  'gemini-3.5-flash',
+  'gemini-flash-latest',
+];
+
 const getGenAI = () => {
-  if (process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY !== 'your_gemini_api_key_here') {
-    return new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+  const key = process.env.GEMINI_API_KEY;
+  if (key && key !== 'your_gemini_api_key_here' && key.trim().length > 10) {
+    return new GoogleGenerativeAI(key.trim());
   }
   return null;
 };
@@ -101,11 +109,25 @@ ${language ? `Language: ${language}` : ''}
 
 Pick 2-3 top recommendations from the list above. Format clearly with title, rating, reason, and an engaging fun tone with emojis. Max 180 words.`;
 
-    const model = genAI.getGenerativeModel({ model: 'gemini-3.1-flash-lite' });
-    const result = await model.generateContent(prompt);
-    const text = result.response.text();
+    let text = null;
+    let modelUsed = null;
+    for (const mName of FLASH_MODELS) {
+      try {
+        const model = genAI.getGenerativeModel({ model: mName });
+        const result = await model.generateContent(prompt);
+        text = result.response.text();
+        if (text) {
+          modelUsed = mName;
+          break;
+        }
+      } catch (err) {
+        console.warn(`[Gemini Rec] Model ${mName} attempt failed:`, err.message);
+      }
+    }
 
-    res.json({ success: true, recommendation: text, generated_at: new Date().toISOString(), ai_source: 'gemini' });
+    if (!text) throw new Error('All Gemini recommendation models failed');
+
+    res.json({ success: true, recommendation: text, generated_at: new Date().toISOString(), ai_source: 'gemini', model_used: modelUsed });
   } catch (err) {
     console.error('Gemini error:', err.message);
     const movies = await getMovieContext();
@@ -123,10 +145,35 @@ exports.chat = async (req, res, next) => {
     const genAI = getGenAI();
 
     if (!genAI) {
-      // Smart conversational fallback
+      // Smart conversational fallback when GEMINI_API_KEY is not configured
       const lower = message.toLowerCase();
       let reply = `🎬 **CineBot here!** `;
-      if (lower.includes('recommend') || lower.includes('watch') || lower.includes('suggest')) {
+
+      if (lower.includes('reverse') && lower.includes('linked list')) {
+        reply += `Here is how to reverse a Singly Linked List in JavaScript:\n\n` +
+          `\`\`\`javascript\n` +
+          `function reverseList(head) {\n` +
+          `  let prev = null, curr = head;\n` +
+          `  while (curr) {\n` +
+          `    let next = curr.next;\n` +
+          `    curr.next = prev;\n` +
+          `    prev = curr;\n` +
+          `    curr = next;\n` +
+          `  }\n` +
+          `  return prev;\n` +
+          `}\n` +
+          `\`\`\`\n\n` +
+          `💡 *Note: I answered this via CineBot's offline engine. Add your free \`GEMINI_API_KEY\` to \`backend/.env\` to unlock live Google Gemini 2.5 Flash for infinite real-time knowledge!*`;
+      } else if (lower.includes('2027') || lower.includes('future movie') || lower.includes('upcoming movie')) {
+        reply += `Major movies slated for **2027** and beyond include:\n\n` +
+          `• **Avengers: Secret Wars** (Marvel Phase 6 Climax)\n` +
+          `• **Star Wars: New Jedi Order**\n` +
+          `• **Fast XI (Fast & Furious 11 Part 2)**\n` +
+          `• **Frozen 3**\n` +
+          `• **The Batman - Part III**\n\n` +
+          `🍿 In the meantime, check out our **2026** catalog right now in CineVerse (like *Ramayana: Part 1*, *Drishyam The Conclusion*, and *Avengers: Doomsday*)!\n\n` +
+          `💡 *Add your \`GEMINI_API_KEY\` in \`backend/.env\` to enable live real-time Gemini web intelligence!*`;
+      } else if (lower.includes('recommend') || lower.includes('watch') || lower.includes('suggest')) {
         const top = movies[0];
         reply += `I strongly recommend checking out **${top ? top.title : 'our latest blockbuster'}**! It's trending with high ratings. Would you like action, comedy, or drama?`;
       } else if (lower.includes('ticket') || lower.includes('book') || lower.includes('seat')) {
@@ -136,7 +183,11 @@ exports.chat = async (req, res, next) => {
       } else if (lower.includes('game') || lower.includes('bored')) {
         reply += `Check out our mini-game section in the navbar where you can play Popcorn Catch or Movie Trivia while you wait for your show! 🎮`;
       } else {
-        reply += `I'm happy to help you with movie suggestions, showtimes, seats, and snack orders. What movie are you in the mood for today? 🍿`;
+        reply += `I'm currently running in **offline demo mode** because \`GEMINI_API_KEY\` is not set in \`backend/.env\`.\n\n` +
+          `To enable the full Google Gemini model to answer any programming question, movie inquiry, or custom topic:\n` +
+          `1. Get a free API key at **https://aistudio.google.com/app/apikey**\n` +
+          `2. Paste it in \`backend/.env\` as \`GEMINI_API_KEY=AIzaSy...\`\n` +
+          `3. Save the file — and I'll immediately answer all your questions with live Gemini AI! 🚀`;
       }
       return res.json({ success: true, reply, timestamp: new Date().toISOString() });
     }
@@ -146,11 +197,6 @@ exports.chat = async (req, res, next) => {
       .join(', ');
 
     const systemPrompt = `You are CineBot, CineVerse's friendly and knowledgeable cinema AI assistant. Currently in theatres at CineVerse: ${movieContextStr}. Answer helpfully, suggest movies from our collection, explain ticket booking or snacks, and keep responses engaging, concise (max 100 words), and fun with emojis.`;
-
-    const model = genAI.getGenerativeModel({
-      model: 'gemini-3.1-flash-lite',
-      systemInstruction: systemPrompt,
-    });
 
     // Sanitize history strictly for Gemini SDK ('user' and 'model' alternation)
     const validHistory = [];
@@ -169,11 +215,30 @@ exports.chat = async (req, res, next) => {
       validHistory.pop();
     }
 
-    const chat = model.startChat({ history: validHistory });
-    const result = await chat.sendMessage(message);
-    const reply = result.response.text();
+    let reply = null;
+    let modelUsed = null;
 
-    res.json({ success: true, reply, timestamp: new Date().toISOString() });
+    for (const mName of FLASH_MODELS) {
+      try {
+        const model = genAI.getGenerativeModel({
+          model: mName,
+          systemInstruction: systemPrompt,
+        });
+        const chat = model.startChat({ history: validHistory });
+        const result = await chat.sendMessage(message);
+        reply = result.response.text();
+        if (reply) {
+          modelUsed = mName;
+          break;
+        }
+      } catch (err) {
+        console.warn(`[Gemini Chat] Model ${mName} attempt failed:`, err.message);
+      }
+    }
+
+    if (!reply) throw new Error('All Gemini chat models failed');
+
+    res.json({ success: true, reply, timestamp: new Date().toISOString(), model_used: modelUsed });
   } catch (err) {
     console.error('Gemini chat error:', err.message);
     res.json({

@@ -316,7 +316,12 @@ export const BookingModal = ({
       if (onBookingComplete) onBookingComplete(activeBooking);
     } catch (err) {
       console.error('Booking failed:', err);
-      alert(err.message || 'Booking transaction failed. Please ensure you are logged in.');
+      if (onRequireAuth && (err.message?.includes('session') || err.message?.includes('token') || err.message?.includes('Authentication') || err.message?.includes('expired'))) {
+        alert(err.message || 'Your session has expired. Please sign in again to complete your booking.');
+        onRequireAuth();
+      } else {
+        alert(err.message || 'Booking transaction failed. Please ensure you are logged in.');
+      }
     } finally {
       setProcessing(false);
     }
