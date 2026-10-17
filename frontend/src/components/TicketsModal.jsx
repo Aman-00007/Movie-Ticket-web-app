@@ -203,9 +203,10 @@ export const TicketsModal = ({ bookings, onClose, onViewFullPage, onCancelBookin
 
                       {isCancellable && onCancelBooking && (
                         <button
-                          onClick={() => {
-                            if (window.confirm(`Cancel booking for ${b.movie_title} and refund ₹${b.total_amount}?`)) {
-                              onCancelBooking(b.id || b.booking_code);
+                          onClick={async () => {
+                            if (window.confirm(`Cancel booking for ${b.movie_title}?\n\nRefund Policy: Your refund of ₹${b.total_amount} will be provided to you within 1-2 days to your original payment method.`)) {
+                              const res = await onCancelBooking(b.id || b.booking_code);
+                              alert(res?.message || `Booking cancelled successfully! Your refund of ₹${b.total_amount} has been initiated and will be provided to you within 1-2 days.`);
                             }
                           }}
                           style={{

@@ -175,6 +175,57 @@ exports.createBooking = async (req, res, next) => {
       userId = guestUser.id;
     }
 
+    // Idempotency: If booking_code is passed and already exists, return existing booking without duplicating
+    if (booking_code) {
+      const existing = await Booking.findOne({ where: { booking_code } });
+      if (existing) {
+        return res.status(200).json({
+          success: true,
+          message: 'Booking already confirmed',
+          booking: {
+            ...existing.toJSON(),
+            movie_title: req.body.movie_title || show?.movie?.title,
+            movie_poster: req.body.movie_poster || show?.movie?.poster_url,
+            theatre_name: req.body.theatre_name || show?.theatre?.name,
+            show_time: req.body.show_time || show?.show_time,
+            show_date: req.body.show_date || show?.show_date,
+          },
+        });
+      }
+    }
+
+    // Prevent duplicate accidental double-click: check if user booked same show in the last 60 seconds
+    const recentDuplicate = await Booking.findOne({
+      where: {
+        user_id: userId,
+        show_id,
+        status: { [Op.ne]: 'cancelled' },
+        createdAt: { [Op.gte]: new Date(Date.now() - 60 * 1000) },
+      },
+    });
+
+    if (recentDuplicate) {
+      const seatLabels = resolvedSeats.map((s) => s.id || `${s.row}${s.number}`).sort().join(',');
+      const existingSeatLabels = (recentDuplicate.seats || [])
+        .map((s) => (typeof s === 'string' ? s : s.id || `${s.row}${s.number}`))
+        .sort()
+        .join(',');
+      if (seatLabels && seatLabels === existingSeatLabels) {
+        return res.status(200).json({
+          success: true,
+          message: 'Booking already confirmed',
+          booking: {
+            ...recentDuplicate.toJSON(),
+            movie_title: req.body.movie_title || show?.movie?.title,
+            movie_poster: req.body.movie_poster || show?.movie?.poster_url,
+            theatre_name: req.body.theatre_name || show?.theatre?.name,
+            show_time: req.body.show_time || show?.show_time,
+            show_date: req.body.show_date || show?.show_date,
+          },
+        });
+      }
+    }
+
     // 5. Create Booking
     const booking = await Booking.create({
       user_id: userId,
@@ -286,7 +337,7 @@ exports.cancelBooking = async (req, res, next) => {
     await booking.update({ status: 'cancelled', payment_status: 'refunded' });
     res.json({
       success: true,
-      message: `🎉 Booking cancelled successfully. ₹${booking.total_amount} refund initiated to original payment method.`,
+      message: `🎉 Booking cancelled successfully. Your refund of ₹${booking.total_amount} has been initiated and will be provided to you within 1-2 days to your original payment method.`,
       booking,
     });
   } catch (err) {

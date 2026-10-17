@@ -9,6 +9,7 @@ export const MyBookingsPageView = ({
   onBackToHome,
   onCancelBooking,
   onSimulateTestBooking,
+  onClearDemoBookings,
   onOpenAuth,
 }) => {
   const [activeTab, setActiveTab] = useState('all'); // 'all' | 'active' | 'cancelled'
@@ -62,7 +63,7 @@ export const MyBookingsPageView = ({
     try {
       const res = await onCancelBooking(cancellingBooking.id || cancellingBooking.booking_code);
       if (res && res.success) {
-        showToast(res.message || '🎉 Booking cancelled and refund initiated successfully!');
+        showToast(res.message || `🎉 Booking cancelled! Your refund of ₹${cancellingBooking.total_amount} has been initiated and will be provided to you within 1-2 days.`);
         setCancellingBooking(null);
       } else {
         showToast(res?.message || 'Cancellation failed. Policy allows cancellation within 4 days only.', true);
@@ -166,7 +167,7 @@ export const MyBookingsPageView = ({
             </div>
           </div>
 
-          {/* Quick Simulator Tools to Test User Requirement */}
+          {/* Quick Simulator Tools to Test 4-Day Policy (Never spams duplicates) */}
           <div
             style={{
               backgroundColor: 'var(--bg-card)',
@@ -186,12 +187,12 @@ export const MyBookingsPageView = ({
               onClick={() => {
                 if (onSimulateTestBooking) {
                   const b = onSimulateTestBooking('eligible');
-                  showToast(`Simulated booking from 1 day ago (${b.movie_title}) - Cancellable!`);
+                  showToast(`Demo pass active: 1 day ago (${b.movie_title}) - 100% cancellable!`);
                 }
               }}
               className="btn btn-secondary"
               style={{ fontSize: '0.75rem', padding: '5px 10px', borderColor: '#16a34a', color: '#4ade80' }}
-              title="Add a test ticket booked 1 day ago (within 4-day policy window)"
+              title="Add or refresh demo ticket booked 1 day ago (eligible for 100% refund)"
             >
               + Booked 1 Day Ago (Cancellable)
             </button>
@@ -199,14 +200,32 @@ export const MyBookingsPageView = ({
               onClick={() => {
                 if (onSimulateTestBooking) {
                   const b = onSimulateTestBooking('expired');
-                  showToast(`Simulated booking from 5 days ago (${b.movie_title}) - Non-refundable!`, true);
+                  showToast(`Demo pass active: 5 days ago (${b.movie_title}) - Non-refundable!`, true);
                 }
               }}
               className="btn btn-secondary"
               style={{ fontSize: '0.75rem', padding: '5px 10px', borderColor: '#ea580c', color: '#fb923c' }}
-              title="Add a test ticket booked 5 days ago (past the 4-day policy window)"
+              title="Add or refresh demo ticket booked 5 days ago (past the 4-day policy window)"
             >
               + Booked 5 Days Ago (Non-Refundable)
+            </button>
+            <button
+              onClick={() => {
+                if (onClearDemoBookings) {
+                  onClearDemoBookings();
+                  showToast('Removed demo tickets. Showing only your verified cinema bookings.');
+                }
+              }}
+              className="btn btn-secondary"
+              style={{
+                fontSize: '0.75rem',
+                padding: '5px 10px',
+                borderColor: 'rgba(239, 68, 68, 0.4)',
+                color: '#f87171',
+              }}
+              title="Remove all demo/simulated passes"
+            >
+              🗑️ Clear Demo Passes
             </button>
           </div>
         </div>
@@ -401,7 +420,21 @@ export const MyBookingsPageView = ({
                       </div>
 
                       {/* Status Badges */}
-                      <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                        {(b.is_demo || String(b.id || '').startsWith('DEMO-') || String(b.booking_code || '').startsWith('DEMO-')) && (
+                          <span
+                            className="badge"
+                            style={{
+                              backgroundColor: 'rgba(234, 88, 12, 0.18)',
+                              color: '#fb923c',
+                              border: '1px solid rgba(234, 88, 12, 0.45)',
+                              fontWeight: 800,
+                              letterSpacing: '0.4px',
+                            }}
+                          >
+                            🧪 DEMO SIMULATOR PASS
+                          </span>
+                        )}
                         {status.isCancelled ? (
                           <span
                             className="badge"
@@ -536,21 +569,28 @@ export const MyBookingsPageView = ({
 
                     {/* Cancellation Button / Status */}
                     {status.isCancelled ? (
-                      <button
-                        disabled
-                        className="btn btn-secondary"
-                        style={{
-                          width: '100%',
-                          fontSize: '0.75rem',
-                          padding: '6px 10px',
-                          opacity: 0.6,
-                          borderColor: 'rgba(239, 68, 68, 0.3)',
-                          color: '#f87171',
-                          cursor: 'not-allowed',
-                        }}
-                      >
-                        Refund Processed
-                      </button>
+                      <div style={{ textAlign: 'center', width: '100%' }}>
+                        <button
+                          disabled
+                          className="btn btn-secondary"
+                          style={{
+                            width: '100%',
+                            fontSize: '0.75rem',
+                            padding: '6px 10px',
+                            opacity: 0.9,
+                            borderColor: 'rgba(34, 197, 94, 0.4)',
+                            backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                            color: '#4ade80',
+                            fontWeight: 700,
+                            cursor: 'not-allowed',
+                          }}
+                        >
+                          ✓ Cancelled
+                        </button>
+                        <div style={{ fontSize: '0.68rem', color: '#86efac', marginTop: 4, lineHeight: 1.2 }}>
+                          Refund will be provided within 1-2 days
+                        </div>
+                      </div>
                     ) : status.isCancellable ? (
                       <button
                         onClick={() => setCancellingBooking(b)}
@@ -666,9 +706,21 @@ export const MyBookingsPageView = ({
               </div>
             </div>
 
-            <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', textAlign: 'center', marginBottom: 20 }}>
-              The refund will be credited instantly to your original payment method, and the reserved seats will be
-              released for other moviegoers.
+            <p
+              style={{
+                fontSize: '0.82rem',
+                color: '#86efac',
+                backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                padding: '10px 14px',
+                borderRadius: 8,
+                border: '1px solid rgba(34, 197, 94, 0.25)',
+                textAlign: 'center',
+                marginBottom: 20,
+                fontWeight: 600,
+                lineHeight: 1.4,
+              }}
+            >
+              💳 Your refund of ₹{cancellingBooking.total_amount} will be provided to you within 1-2 days to your original payment method. Reserved seats will be released.
             </p>
 
             <div style={{ display: 'flex', gap: 12 }}>

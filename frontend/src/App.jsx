@@ -28,7 +28,7 @@ export function App() {
   const authCtrl = useAuthController();
 
   // 3. MVC Booking Controller (seats, theatres, concessions, booked passes)
-  const bookingCtrl = useBookingController(movieCtrl.selectedCity);
+  const bookingCtrl = useBookingController(movieCtrl.selectedCity, authCtrl.user);
 
   // 4. MVC AI Concierge Controller
   const aiCtrl = useAiController();
@@ -125,6 +125,7 @@ export function App() {
           onBackToHome={() => setMyBookingsPageOpen(false)}
           onCancelBooking={bookingCtrl.cancelBooking}
           onSimulateTestBooking={bookingCtrl.simulateTestBooking}
+          onClearDemoBookings={bookingCtrl.clearDemoBookings}
           onOpenAuth={authCtrl.openAuthModal}
         />
       ) : movieCtrl.selectedMovieDetail ? (
